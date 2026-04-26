@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import authorPortrait from "@/assets/author-portrait.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const navLinks = [
   { label: "Works", href: "#works" },
