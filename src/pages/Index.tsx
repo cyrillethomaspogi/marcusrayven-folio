@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import authorPortrait from "@/assets/author-portrait.jpg";
-import coverWhatever from "@/assets/cover-whatever.jpg";
-import coverCartographer from "@/assets/cover-cartographer.jpg";
-import coverShape from "@/assets/cover-shape.jpg";
-import coverAlpha from "@/assets/cover-alpha.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 const navLinks = [
   { label: "Works", href: "#works" },
@@ -12,57 +9,13 @@ const navLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
-const works = [
-  {
-    title: "Whatever You Leave Behind",
-    genre: "BL Novelette",
-    blurb:
-      "A quiet meditation on absence — two boys, one summer, and the small wreckage left behind when love refuses to be named.",
-    cover: coverWhatever,
-  },
-  {
-    title: "Cartographer of Endings",
-    genre: "Dark BL · Psychological",
-    blurb:
-      "He maps the places people die. When a stranger walks into his life carrying the same coordinates, the line between obsession and devotion begins to blur.",
-    cover: coverCartographer,
-  },
-  {
-    title: "The Shape You Left Behind",
-    genre: "Supernatural BL",
-    blurb:
-      "A year after his lover vanishes, Ren begins to see him again — in mirrors, in doorways, in the breath between sleep and waking.",
-    cover: coverShape,
-  },
-  {
-    title: "My Fearsome Alpha is a Puppy?!",
-    genre: "Omegaverse · Wattpad",
-    blurb:
-      "He's the most feared alpha in three districts. He's also, apparently, terrified of thunderstorms. A tender, ridiculous, thoroughly self-indulgent romance.",
-    cover: coverAlpha,
-  },
-];
-
-const posts = [
-  {
-    date: "April 18, 2026",
-    title: "On Writing Tenderness Inside the Dark",
-    excerpt:
-      "Some readers ask why my thrillers feel so quiet. The honest answer is that I don't believe cruelty and tenderness live in separate rooms — they share a wall, and I keep my ear pressed to it.",
-  },
-  {
-    date: "March 02, 2026",
-    title: "A Note on the New Novelette",
-    excerpt:
-      "Whatever You Leave Behind began as a single sentence I wrote on a napkin in Lisbon: 'He kept the spare key long after the door was gone.' Everything else followed from there.",
-  },
-  {
-    date: "February 14, 2026",
-    title: "Why I Still Write on Wattpad",
-    excerpt:
-      "There is a particular intimacy to writing in public, chapter by chapter, while readers leave inline comments like footprints in wet sand. I'm not ready to give that up.",
-  },
-];
+interface Post {
+  id: string;
+  title: string;
+  excerpt: string;
+  published_at: string | null;
+  created_at: string;
+}
 
 const Index = () => {
   const [scrolled, setScrolled] = useState(false);
