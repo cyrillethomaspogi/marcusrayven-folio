@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import authorPortrait from "@/assets/author-portrait.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useStories } from "@/hooks/useStories";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const navLinks = [
   { label: "Works", href: "#works" },
@@ -97,13 +98,17 @@ const Index = () => {
                 {l.label}
               </a>
             ))}
+            <ThemeToggle className="-mr-2" />
           </nav>
-          <a
-            href="#contact"
-            className="md:hidden font-label text-[11px] text-primary"
-          >
-            Menu
-          </a>
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <a
+              href="#contact"
+              className="font-label text-[11px] text-primary"
+            >
+              Menu
+            </a>
+          </div>
         </div>
       </header>
 
