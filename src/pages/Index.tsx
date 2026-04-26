@@ -104,17 +104,71 @@ const Index = () => {
             ))}
             <ThemeToggle className="-mr-2" />
           </nav>
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-1 md:hidden">
             <ThemeToggle />
-            <a
-              href="#contact"
-              className="font-label text-[11px] text-primary"
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+              className="w-11 h-11 inline-flex items-center justify-center text-foreground/80 hover:text-primary"
             >
-              Menu
-            </a>
+              <Menu size={20} strokeWidth={1.6} />
+            </button>
           </div>
         </div>
       </header>
+
+      {/* MOBILE DRAWER */}
+      <div
+        className={`fixed inset-0 z-[60] md:hidden transition-opacity duration-300 ${
+          menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden={!menuOpen}
+      >
+        <div
+          className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
+          onClick={() => setMenuOpen(false)}
+        />
+        <aside
+          className={`absolute right-0 top-0 h-full w-[82%] max-w-sm bg-background border-l border-border shadow-page transform transition-transform duration-300 ${
+            menuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="flex items-center justify-between p-5 border-b border-border/60">
+            <span className="font-display text-xl">
+              <span className="italic text-primary">M</span>arcus Rayven
+            </span>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(false)}
+              aria-label="Close menu"
+              className="w-11 h-11 inline-flex items-center justify-center text-foreground/70 hover:text-primary"
+            >
+              <X size={20} strokeWidth={1.6} />
+            </button>
+          </div>
+          <nav className="flex flex-col p-5">
+            {navLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={() => setMenuOpen(false)}
+                className="font-label text-xs tracking-[0.2em] text-foreground/80 hover:text-primary py-4 border-b border-border/40"
+              >
+                {l.label}
+              </a>
+            ))}
+            <Link
+              to="/guestbook"
+              onClick={() => setMenuOpen(false)}
+              className="font-label text-xs tracking-[0.2em] text-primary py-4"
+            >
+              Guestbook →
+            </Link>
+          </nav>
+        </aside>
+      </div>
 
       {/* HERO */}
       <section
