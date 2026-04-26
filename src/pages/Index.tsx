@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import authorPortrait from "@/assets/author-portrait.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useStories } from "@/hooks/useStories";
+import { usePlaylist } from "@/hooks/usePlaylist";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const navLinks = [
@@ -24,8 +26,10 @@ interface Post {
 const Index = () => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const { stories } = useStories();
+  const { url: playlistUrl } = usePlaylist();
   const clickRef = useRef({ count: 0, timer: 0 as unknown as number });
 
   const handleSecretClick = () => {
