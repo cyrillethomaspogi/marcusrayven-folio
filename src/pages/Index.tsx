@@ -209,29 +209,39 @@ const Index = () => {
             <div className="h-px bg-foreground/20 w-full" />
           </div>
 
-          <div className="divide-y divide-foreground/15">
-            {posts.map((p, i) => (
-              <article
-                key={p.title}
-                className="py-10 first:pt-0 reveal"
-                style={{ transitionDelay: `${i * 100}ms` }}
-              >
-                <p className="font-label text-[10px] text-foreground/50 mb-3">{p.date}</p>
-                <h3 className="font-display text-3xl md:text-[2.2rem] leading-snug mb-4 hover:text-primary transition-colors cursor-pointer">
-                  {p.title}
-                </h3>
-                <p className="text-lg leading-relaxed text-ink-soft mb-5 max-w-2xl">
-                  {p.excerpt}
-                </p>
-                <a
-                  href="#"
-                  className="font-label text-[11px] text-primary border-b border-primary/40 hover:border-primary pb-1"
-                >
-                  Continue Reading →
-                </a>
-              </article>
-            ))}
-          </div>
+          {posts.length === 0 ? (
+            <div className="reveal text-center py-12">
+              <p className="font-display italic text-xl text-ink-soft">
+                The notebook is open. First entry coming soon.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-foreground/15">
+              {posts.map((p, i) => {
+                const date = new Date(p.published_at ?? p.created_at).toLocaleDateString(
+                  "en-US",
+                  { year: "numeric", month: "long", day: "2-digit" }
+                );
+                return (
+                  <article
+                    key={p.id}
+                    className="py-10 first:pt-0 reveal"
+                    style={{ transitionDelay: `${i * 100}ms` }}
+                  >
+                    <p className="font-label text-[10px] text-foreground/50 mb-3">{date}</p>
+                    <h3 className="font-display text-3xl md:text-[2.2rem] leading-snug mb-4 hover:text-primary transition-colors cursor-pointer">
+                      {p.title}
+                    </h3>
+                    {p.excerpt && (
+                      <p className="text-lg leading-relaxed text-ink-soft mb-5 max-w-2xl">
+                        {p.excerpt}
+                      </p>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
