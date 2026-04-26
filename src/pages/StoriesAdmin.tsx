@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStories, type Story } from "@/hooks/useStories";
+import { usePlaylist, DEFAULT_PLAYLIST_URL } from "@/hooks/usePlaylist";
 
 const ADMIN_PASSWORD = "rayven2020";
 const AUTH_KEY = "mr.stories.admin.auth";
@@ -19,8 +20,15 @@ const StoriesAdmin = () => {
   const [pwError, setPwError] = useState("");
 
   const { stories, addStory, updateStory, deleteStory } = useStories();
+  const { url: playlistUrl, save: savePlaylist, reset: resetPlaylist } = usePlaylist();
+  const [playlistInput, setPlaylistInput] = useState(playlistUrl);
+  const [playlistSaved, setPlaylistSaved] = useState(false);
   const [editing, setEditing] = useState<Story | (Omit<Story, "id"> & { id?: string }) | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setPlaylistInput(playlistUrl);
+  }, [playlistUrl]);
 
   useEffect(() => {
     document.title = "Stories Admin · Marcus Rayven";
