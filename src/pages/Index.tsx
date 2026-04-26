@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import authorPortrait from "@/assets/author-portrait.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useStories } from "@/hooks/useStories";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const navLinks = [
   { label: "Works", href: "#works" },
@@ -97,13 +98,17 @@ const Index = () => {
                 {l.label}
               </a>
             ))}
+            <ThemeToggle className="-mr-2" />
           </nav>
-          <a
-            href="#contact"
-            className="md:hidden font-label text-[11px] text-primary"
-          >
-            Menu
-          </a>
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <a
+              href="#contact"
+              className="font-label text-[11px] text-primary"
+            >
+              Menu
+            </a>
+          </div>
         </div>
       </header>
 
@@ -351,6 +356,45 @@ const Index = () => {
               })}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* PLAYLIST */}
+      <section id="playlist" className="py-24 md:py-32">
+        <div className="container max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+            <div className="reveal order-2 md:order-1">
+              <div className="rounded-xl overflow-hidden border border-border/60 shadow-card bg-cream-deep/60">
+                <iframe
+                  title="Marcus Rayven writing playlist"
+                  src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0"
+                  width="100%"
+                  height="380"
+                  frameBorder={0}
+                  loading="lazy"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  className="block w-full"
+                  style={{ border: 0 }}
+                />
+              </div>
+            </div>
+
+            <div className="reveal order-1 md:order-2">
+              <p className="font-label text-[11px] text-primary mb-5">Now Playing</p>
+              <h2 className="font-display text-4xl md:text-5xl leading-tight mb-8">
+                The Soundtrack to <span className="italic text-primary">Every Story</span>.
+              </h2>
+              <p className="text-lg leading-relaxed text-ink-soft mb-6">
+                Every manuscript has a playlist. These are the songs that lived inside
+                the words — the ones that played on loop while the characters bled onto
+                the page.
+              </p>
+              <p className="font-display italic text-base text-foreground/60">
+                Playlist updates with every new project.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
