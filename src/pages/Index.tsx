@@ -289,66 +289,20 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Send a message */}
-          <div className="reveal max-w-2xl mx-auto">
+          {/* Guestbook CTA */}
+          <div className="reveal max-w-2xl mx-auto text-center">
             <div className="ornament mb-10">
-              <span className="font-label text-[10px] text-foreground/50">or send a note</span>
+              <span className="font-label text-[10px] text-foreground/50">or sign the book</span>
             </div>
-            <form onSubmit={handleContactSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="name" className="font-label text-[10px] text-foreground/60 block mb-2">
-                    Name
-                  </label>
-                  <input
-                    id="name"
-                    type="text"
-                    required
-                    maxLength={100}
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full bg-transparent border-b border-foreground/30 focus:border-primary outline-none py-2 font-display text-lg transition-colors"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" className="font-label text-[10px] text-foreground/60 block mb-2">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    maxLength={255}
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full bg-transparent border-b border-foreground/30 focus:border-primary outline-none py-2 font-display text-lg transition-colors"
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="message" className="font-label text-[10px] text-foreground/60 block mb-2">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  required
-                  maxLength={2000}
-                  rows={5}
-                  value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  className="w-full bg-transparent border-b border-foreground/30 focus:border-primary outline-none py-2 font-display text-lg leading-relaxed resize-none transition-colors"
-                />
-              </div>
-              <div className="text-center pt-4">
-                <button
-                  type="submit"
-                  disabled={sending}
-                  className="font-label text-[11px] tracking-[0.2em] text-primary border border-primary/40 hover:bg-primary hover:text-primary-foreground px-10 py-4 transition-colors disabled:opacity-50"
-                >
-                  {sending ? "Sending…" : "Send Message"}
-                </button>
-              </div>
-            </form>
+            <p className="font-display italic text-2xl md:text-3xl text-ink-soft leading-relaxed mb-8">
+              Leave a quiet note in the guestbook — no email, no account, just a nickname and a thought.
+            </p>
+            <Link
+              to="/guestbook"
+              className="inline-block font-label text-[11px] tracking-[0.2em] text-primary border border-primary/40 hover:bg-primary hover:text-primary-foreground px-10 py-4 transition-colors"
+            >
+              Open the Guestbook
+            </Link>
 
             <div className="ornament mt-16 max-w-xs mx-auto">
               <span className="font-label text-[10px] text-foreground/50">fin</span>
