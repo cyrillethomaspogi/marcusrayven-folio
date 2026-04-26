@@ -431,17 +431,15 @@ const Index = () => {
         <div className="container max-w-6xl">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
             <div className="reveal order-2 md:order-1">
-              <div className="rounded-xl overflow-hidden border border-border/60 shadow-card bg-cream-deep/60">
+              <div className="rounded-xl overflow-hidden border border-border/60 shadow-card bg-card h-[280px] md:h-[380px]">
                 <iframe
+                  key={playlistUrl}
                   title="Marcus Rayven writing playlist"
-                  src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0"
-                  width="100%"
-                  height="380"
-                  frameBorder={0}
+                  src={playlistUrl}
                   loading="lazy"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   allowFullScreen
-                  className="block w-full"
+                  className="block w-full h-full"
                   style={{ border: 0 }}
                 />
               </div>
