@@ -174,39 +174,17 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12">
-            {works.map((w, i) => (
-              <article
-                key={w.title}
-                className="reveal group flex flex-col"
-                style={{ transitionDelay: `${i * 80}ms` }}
-              >
-                <div className="relative overflow-hidden bg-muted shadow-card mb-6 aspect-[3/4]">
-                  <img
-                    src={w.cover}
-                    alt={`Cover for ${w.title}`}
-                    width={800}
-                    height={1100}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/30 via-transparent to-transparent opacity-60" />
-                </div>
-                <span className="inline-block self-start font-label text-[10px] text-primary bg-primary/10 px-3 py-1 mb-4 rounded-full">
-                  {w.genre}
-                </span>
-                <h3 className="font-display text-2xl md:text-[1.7rem] leading-tight mb-3">
-                  {w.title}
-                </h3>
-                <p className="text-ink-soft leading-relaxed mb-5 flex-1">{w.blurb}</p>
-                <a
-                  href="#contact"
-                  className="font-label text-[11px] text-foreground/70 hover:text-primary transition-colors self-start border-b border-foreground/20 hover:border-primary pb-1"
-                >
-                  Read More →
-                </a>
-              </article>
-            ))}
+          <div className="reveal max-w-xl mx-auto text-center">
+            <p className="font-display italic text-2xl md:text-3xl text-ink-soft leading-relaxed mb-8">
+              New stories arriving soon.
+            </p>
+            <p className="text-ink-soft leading-relaxed">
+              The shelf is being arranged. Expect novelettes, longer works, and a few
+              quieter experiments — drift back in a little while.
+            </p>
+            <div className="ornament mt-12">
+              <span className="font-label text-[10px] text-foreground/50">in progress</span>
+            </div>
           </div>
         </div>
       </section>
