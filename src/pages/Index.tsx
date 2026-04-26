@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import authorPortrait from "@/assets/author-portrait.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useStories } from "@/hooks/useStories";
+import { usePlaylist } from "@/hooks/usePlaylist";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const navLinks = [
@@ -24,8 +26,10 @@ interface Post {
 const Index = () => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const { stories } = useStories();
+  const { url: playlistUrl } = usePlaylist();
   const clickRef = useRef({ count: 0, timer: 0 as unknown as number });
 
   const handleSecretClick = () => {
@@ -50,12 +54,21 @@ const Index = () => {
       .then(({ data }) => setPosts((data ?? []) as Post[]));
   }, []);
 
+  // Lock body scroll while mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
 
   useEffect(() => {
     const els = document.querySelectorAll<HTMLElement>(".reveal");
@@ -100,17 +113,71 @@ const Index = () => {
             ))}
             <ThemeToggle className="-mr-2" />
           </nav>
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-1 md:hidden">
             <ThemeToggle />
-            <a
-              href="#contact"
-              className="font-label text-[11px] text-primary"
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+              className="w-11 h-11 inline-flex items-center justify-center text-foreground/80 hover:text-primary"
             >
-              Menu
-            </a>
+              <Menu size={20} strokeWidth={1.6} />
+            </button>
           </div>
         </div>
       </header>
+
+      {/* MOBILE DRAWER */}
+      <div
+        className={`fixed inset-0 z-[60] md:hidden transition-opacity duration-300 ${
+          menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden={!menuOpen}
+      >
+        <div
+          className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
+          onClick={() => setMenuOpen(false)}
+        />
+        <aside
+          className={`absolute right-0 top-0 h-full w-[82%] max-w-sm bg-background border-l border-border shadow-page transform transition-transform duration-300 ${
+            menuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="flex items-center justify-between p-5 border-b border-border/60">
+            <span className="font-display text-xl">
+              <span className="italic text-primary">M</span>arcus Rayven
+            </span>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(false)}
+              aria-label="Close menu"
+              className="w-11 h-11 inline-flex items-center justify-center text-foreground/70 hover:text-primary"
+            >
+              <X size={20} strokeWidth={1.6} />
+            </button>
+          </div>
+          <nav className="flex flex-col p-5">
+            {navLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={() => setMenuOpen(false)}
+                className="font-label text-xs tracking-[0.2em] text-foreground/80 hover:text-primary py-4 border-b border-border/40"
+              >
+                {l.label}
+              </a>
+            ))}
+            <Link
+              to="/guestbook"
+              onClick={() => setMenuOpen(false)}
+              className="font-label text-xs tracking-[0.2em] text-primary py-4"
+            >
+              Guestbook →
+            </Link>
+          </nav>
+        </aside>
+      </div>
 
       {/* HERO */}
       <section
@@ -364,17 +431,15 @@ const Index = () => {
         <div className="container max-w-6xl">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
             <div className="reveal order-2 md:order-1">
-              <div className="rounded-xl overflow-hidden border border-border/60 shadow-card bg-cream-deep/60">
+              <div className="rounded-xl overflow-hidden border border-border/60 shadow-card bg-card h-[280px] md:h-[380px]">
                 <iframe
+                  key={playlistUrl}
                   title="Marcus Rayven writing playlist"
-                  src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0"
-                  width="100%"
-                  height="380"
-                  frameBorder={0}
+                  src={playlistUrl}
                   loading="lazy"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   allowFullScreen
-                  className="block w-full"
+                  className="block w-full h-full"
                   style={{ border: 0 }}
                 />
               </div>
