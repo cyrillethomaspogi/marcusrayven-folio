@@ -54,12 +54,14 @@ const Index = () => {
       .then(({ data }) => setPosts((data ?? []) as Post[]));
   }, []);
 
+  // Lock body scroll while mobile menu is open
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
 
   useEffect(() => {
     const els = document.querySelectorAll<HTMLElement>(".reveal");
