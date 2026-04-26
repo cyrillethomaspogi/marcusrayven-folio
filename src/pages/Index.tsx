@@ -62,6 +62,13 @@ const Index = () => {
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
 
   useEffect(() => {
     const els = document.querySelectorAll<HTMLElement>(".reveal");
