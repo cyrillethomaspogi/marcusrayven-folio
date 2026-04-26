@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import authorPortrait from "@/assets/author-portrait.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const navLinks = [
   { label: "Works", href: "#works" },
@@ -20,6 +21,30 @@ interface Post {
 const Index = () => {
   const [scrolled, setScrolled] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [sending, setSending] = useState(false);
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+      toast.error("Please fill in every field before sending.");
+      return;
+    }
+    setSending(true);
+    try {
+      const id = crypto.randomUUID();
+      const { error } = await supabase.functions.invoke("send-contact-message", {
+        body: { ...form, idempotencyKey: `contact-${id}` },
+      });
+      if (error) throw error;
+      toast.success("Your message has been sent. Thank you.");
+      setForm({ name: "", email: "", message: "" });
+    } catch (err) {
+      toast.error("Couldn't send right now. Please try again or email directly.");
+    } finally {
+      setSending(false);
+    }
+  };
 
   useEffect(() => {
     supabase
@@ -247,39 +272,107 @@ const Index = () => {
 
       {/* CONTACT */}
       <section id="contact" className="py-28 md:py-40 bg-cream-deep/60">
-        <div className="container max-w-2xl text-center">
-          <div className="reveal">
+        <div className="container max-w-3xl">
+          <div className="reveal text-center">
             <p className="font-label text-[11px] text-primary mb-5">Contact</p>
             <h2 className="font-display text-5xl md:text-6xl mb-6">
               Let's talk about <span className="italic text-primary">stories</span>.
             </h2>
-            <p className="text-lg text-ink-soft leading-relaxed max-w-lg mx-auto mb-12">
+            <p className="text-lg text-ink-soft leading-relaxed max-w-lg mx-auto mb-14">
               For correspondence, collaboration, or just to tell me which character broke
               your heart — the door is always open.
             </p>
+          </div>
 
-            <div className="flex flex-col items-center gap-5">
+          {/* Find me here */}
+          <div className="reveal mb-16">
+            <p className="font-label text-[11px] text-primary mb-6 text-center">Find me here</p>
+            <div className="flex flex-col items-center gap-4">
               <a
                 href="https://wattpad.com/user/redlinedboi"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-display text-2xl md:text-3xl italic hover:text-primary transition-colors"
+                className="font-display text-xl md:text-2xl italic hover:text-primary transition-colors"
               >
                 Wattpad <span className="text-foreground/50">— @redlinedboi</span>
               </a>
               <a
-                href="#"
-                className="font-display text-2xl md:text-3xl italic hover:text-primary transition-colors"
+                href="https://www.dreame.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-display text-xl md:text-2xl italic hover:text-primary transition-colors"
               >
-                TikTok <span className="text-foreground/50">— @marcusrayven</span>
+                Dreame <span className="text-foreground/50">— Marcus Rayven</span>
               </a>
               <a
-                href="mailto:hello@marcusrayven.com"
-                className="font-display text-2xl md:text-3xl italic hover:text-primary transition-colors"
+                href="mailto:marcusraaayven@gmail.com"
+                className="font-display text-xl md:text-2xl italic hover:text-primary transition-colors"
               >
-                hello@marcusrayven.com
+                Email <span className="text-foreground/50">— marcusraaayven@gmail.com</span>
               </a>
             </div>
+          </div>
+
+          {/* Send a message */}
+          <div className="reveal max-w-2xl mx-auto">
+            <div className="ornament mb-10">
+              <span className="font-label text-[10px] text-foreground/50">or send a note</span>
+            </div>
+            <form onSubmit={handleContactSubmit} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="name" className="font-label text-[10px] text-foreground/60 block mb-2">
+                    Name
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    required
+                    maxLength={100}
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full bg-transparent border-b border-foreground/30 focus:border-primary outline-none py-2 font-display text-lg transition-colors"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="font-label text-[10px] text-foreground/60 block mb-2">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    maxLength={255}
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    className="w-full bg-transparent border-b border-foreground/30 focus:border-primary outline-none py-2 font-display text-lg transition-colors"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="message" className="font-label text-[10px] text-foreground/60 block mb-2">
+                  Message
+                </label>
+                <textarea
+                  id="message"
+                  required
+                  maxLength={2000}
+                  rows={5}
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  className="w-full bg-transparent border-b border-foreground/30 focus:border-primary outline-none py-2 font-display text-lg leading-relaxed resize-none transition-colors"
+                />
+              </div>
+              <div className="text-center pt-4">
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="font-label text-[11px] tracking-[0.2em] text-primary border border-primary/40 hover:bg-primary hover:text-primary-foreground px-10 py-4 transition-colors disabled:opacity-50"
+                >
+                  {sending ? "Sending…" : "Send Message"}
+                </button>
+              </div>
+            </form>
 
             <div className="ornament mt-16 max-w-xs mx-auto">
               <span className="font-label text-[10px] text-foreground/50">fin</span>
