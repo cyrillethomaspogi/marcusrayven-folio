@@ -143,6 +143,58 @@ const StoriesAdmin = () => {
           </div>
         </div>
 
+        {/* Playlist settings */}
+        <div className="bg-cream-deep/40 border border-border p-6 mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="font-label text-[10px] text-primary mb-1">Playlist Settings</p>
+              <h2 className="font-display text-xl">Spotify Playlist</h2>
+            </div>
+            <button
+              onClick={() => {
+                resetPlaylist();
+                setPlaylistInput(DEFAULT_PLAYLIST_URL);
+                setPlaylistSaved(false);
+              }}
+              className="font-label text-[10px] text-foreground/50 hover:text-destructive"
+            >
+              Reset
+            </button>
+          </div>
+          <label className="font-label text-[10px] text-foreground/60 block mb-2">
+            Spotify Playlist Embed URL
+          </label>
+          <input
+            type="url"
+            value={playlistInput}
+            onChange={(e) => {
+              setPlaylistInput(e.target.value);
+              setPlaylistSaved(false);
+            }}
+            placeholder="https://open.spotify.com/embed/playlist/..."
+            className="w-full bg-background border border-border px-4 py-3 font-body text-sm focus:outline-none focus:border-primary"
+          />
+          <p className="font-label text-[10px] text-foreground/50 mt-2">
+            Paste either the share link or the embed URL — both work.
+          </p>
+          <div className="flex items-center gap-3 mt-4">
+            <button
+              onClick={() => {
+                const saved = savePlaylist(playlistInput);
+                setPlaylistInput(saved);
+                setPlaylistSaved(true);
+                setTimeout(() => setPlaylistSaved(false), 2000);
+              }}
+              className="bg-primary text-primary-foreground font-label text-xs px-5 py-2.5 hover:bg-primary/90"
+            >
+              Save Playlist
+            </button>
+            {playlistSaved && (
+              <span className="font-label text-[10px] text-primary">Saved ✓</span>
+            )}
+          </div>
+        </div>
+
         {editing ? (
           <div className="bg-cream-deep/40 border border-border p-8">
             <h2 className="font-display text-2xl mb-6">
