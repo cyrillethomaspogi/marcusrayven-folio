@@ -128,6 +128,19 @@
       radial-gradient(circle at 20% 10%, hsl(32 50% 88% / 0.5), transparent 50%),
       radial-gradient(circle at 80% 70%, hsl(16 40% 86% / 0.4), transparent 55%);
     background-attachment: fixed;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at 20% 10%, hsl(24 30% 16% / 0.7), transparent 50%),
+      radial-gradient(circle at 80% 70%, hsl(16 35% 18% / 0.55), transparent 55%);
+  }
+
+  body, header, footer, section, nav, a, button, input, textarea, select, article, .reveal {
+    transition-property: background-color, border-color, color, box-shadow;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
   }
 
   h1, h2, h3, h4 {
