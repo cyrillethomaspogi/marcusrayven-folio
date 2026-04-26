@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import authorPortrait from "@/assets/author-portrait.jpg";
-import coverWhatever from "@/assets/cover-whatever.jpg";
-import coverCartographer from "@/assets/cover-cartographer.jpg";
-import coverShape from "@/assets/cover-shape.jpg";
-import coverAlpha from "@/assets/cover-alpha.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 const navLinks = [
   { label: "Works", href: "#works" },
@@ -12,60 +9,27 @@ const navLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
-const works = [
-  {
-    title: "Whatever You Leave Behind",
-    genre: "BL Novelette",
-    blurb:
-      "A quiet meditation on absence — two boys, one summer, and the small wreckage left behind when love refuses to be named.",
-    cover: coverWhatever,
-  },
-  {
-    title: "Cartographer of Endings",
-    genre: "Dark BL · Psychological",
-    blurb:
-      "He maps the places people die. When a stranger walks into his life carrying the same coordinates, the line between obsession and devotion begins to blur.",
-    cover: coverCartographer,
-  },
-  {
-    title: "The Shape You Left Behind",
-    genre: "Supernatural BL",
-    blurb:
-      "A year after his lover vanishes, Ren begins to see him again — in mirrors, in doorways, in the breath between sleep and waking.",
-    cover: coverShape,
-  },
-  {
-    title: "My Fearsome Alpha is a Puppy?!",
-    genre: "Omegaverse · Wattpad",
-    blurb:
-      "He's the most feared alpha in three districts. He's also, apparently, terrified of thunderstorms. A tender, ridiculous, thoroughly self-indulgent romance.",
-    cover: coverAlpha,
-  },
-];
-
-const posts = [
-  {
-    date: "April 18, 2026",
-    title: "On Writing Tenderness Inside the Dark",
-    excerpt:
-      "Some readers ask why my thrillers feel so quiet. The honest answer is that I don't believe cruelty and tenderness live in separate rooms — they share a wall, and I keep my ear pressed to it.",
-  },
-  {
-    date: "March 02, 2026",
-    title: "A Note on the New Novelette",
-    excerpt:
-      "Whatever You Leave Behind began as a single sentence I wrote on a napkin in Lisbon: 'He kept the spare key long after the door was gone.' Everything else followed from there.",
-  },
-  {
-    date: "February 14, 2026",
-    title: "Why I Still Write on Wattpad",
-    excerpt:
-      "There is a particular intimacy to writing in public, chapter by chapter, while readers leave inline comments like footprints in wet sand. I'm not ready to give that up.",
-  },
-];
+interface Post {
+  id: string;
+  title: string;
+  excerpt: string;
+  published_at: string | null;
+  created_at: string;
+}
 
 const Index = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("posts")
+      .select("id, title, excerpt, published_at, created_at")
+      .eq("published", true)
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .limit(20)
+      .then(({ data }) => setPosts((data ?? []) as Post[]));
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -221,39 +185,17 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12">
-            {works.map((w, i) => (
-              <article
-                key={w.title}
-                className="reveal group flex flex-col"
-                style={{ transitionDelay: `${i * 80}ms` }}
-              >
-                <div className="relative overflow-hidden bg-muted shadow-card mb-6 aspect-[3/4]">
-                  <img
-                    src={w.cover}
-                    alt={`Cover for ${w.title}`}
-                    width={800}
-                    height={1100}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/30 via-transparent to-transparent opacity-60" />
-                </div>
-                <span className="inline-block self-start font-label text-[10px] text-primary bg-primary/10 px-3 py-1 mb-4 rounded-full">
-                  {w.genre}
-                </span>
-                <h3 className="font-display text-2xl md:text-[1.7rem] leading-tight mb-3">
-                  {w.title}
-                </h3>
-                <p className="text-ink-soft leading-relaxed mb-5 flex-1">{w.blurb}</p>
-                <a
-                  href="#contact"
-                  className="font-label text-[11px] text-foreground/70 hover:text-primary transition-colors self-start border-b border-foreground/20 hover:border-primary pb-1"
-                >
-                  Read More →
-                </a>
-              </article>
-            ))}
+          <div className="reveal max-w-xl mx-auto text-center">
+            <p className="font-display italic text-2xl md:text-3xl text-ink-soft leading-relaxed mb-8">
+              New stories arriving soon.
+            </p>
+            <p className="text-ink-soft leading-relaxed">
+              The shelf is being arranged. Expect novelettes, longer works, and a few
+              quieter experiments — drift back in a little while.
+            </p>
+            <div className="ornament mt-12">
+              <span className="font-label text-[10px] text-foreground/50">in progress</span>
+            </div>
           </div>
         </div>
       </section>
@@ -267,29 +209,39 @@ const Index = () => {
             <div className="h-px bg-foreground/20 w-full" />
           </div>
 
-          <div className="divide-y divide-foreground/15">
-            {posts.map((p, i) => (
-              <article
-                key={p.title}
-                className="py-10 first:pt-0 reveal"
-                style={{ transitionDelay: `${i * 100}ms` }}
-              >
-                <p className="font-label text-[10px] text-foreground/50 mb-3">{p.date}</p>
-                <h3 className="font-display text-3xl md:text-[2.2rem] leading-snug mb-4 hover:text-primary transition-colors cursor-pointer">
-                  {p.title}
-                </h3>
-                <p className="text-lg leading-relaxed text-ink-soft mb-5 max-w-2xl">
-                  {p.excerpt}
-                </p>
-                <a
-                  href="#"
-                  className="font-label text-[11px] text-primary border-b border-primary/40 hover:border-primary pb-1"
-                >
-                  Continue Reading →
-                </a>
-              </article>
-            ))}
-          </div>
+          {posts.length === 0 ? (
+            <div className="reveal text-center py-12">
+              <p className="font-display italic text-xl text-ink-soft">
+                The notebook is open. First entry coming soon.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-foreground/15">
+              {posts.map((p, i) => {
+                const date = new Date(p.published_at ?? p.created_at).toLocaleDateString(
+                  "en-US",
+                  { year: "numeric", month: "long", day: "2-digit" }
+                );
+                return (
+                  <article
+                    key={p.id}
+                    className="py-10 first:pt-0 reveal"
+                    style={{ transitionDelay: `${i * 100}ms` }}
+                  >
+                    <p className="font-label text-[10px] text-foreground/50 mb-3">{date}</p>
+                    <h3 className="font-display text-3xl md:text-[2.2rem] leading-snug mb-4 hover:text-primary transition-colors cursor-pointer">
+                      {p.title}
+                    </h3>
+                    {p.excerpt && (
+                      <p className="text-lg leading-relaxed text-ink-soft mb-5 max-w-2xl">
+                        {p.excerpt}
+                      </p>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
