@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import authorPortrait from "@/assets/author-portrait.jpg";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 const navLinks = [
   { label: "Works", href: "#works" },
@@ -21,30 +21,6 @@ interface Post {
 const Index = () => {
   const [scrolled, setScrolled] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [sending, setSending] = useState(false);
-
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
-      toast.error("Please fill in every field before sending.");
-      return;
-    }
-    setSending(true);
-    try {
-      const id = crypto.randomUUID();
-      const { error } = await supabase.functions.invoke("send-contact-message", {
-        body: { ...form, idempotencyKey: `contact-${id}` },
-      });
-      if (error) throw error;
-      toast.success("Your message has been sent. Thank you.");
-      setForm({ name: "", email: "", message: "" });
-    } catch (err) {
-      toast.error("Couldn't send right now. Please try again or email directly.");
-    } finally {
-      setSending(false);
-    }
-  };
 
   useEffect(() => {
     supabase
