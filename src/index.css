@@ -57,6 +57,56 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  .dark {
+    /* Warm candlelit dark editorial palette */
+    --background: 24 22% 8%;
+    --foreground: 35 40% 90%;
+
+    --card: 24 18% 14%;
+    --card-foreground: 35 40% 90%;
+
+    --popover: 24 18% 14%;
+    --popover-foreground: 35 40% 90%;
+
+    --primary: 16 60% 57%;
+    --primary-foreground: 24 22% 10%;
+
+    --secondary: 24 16% 18%;
+    --secondary-foreground: 35 40% 90%;
+
+    --muted: 24 14% 18%;
+    --muted-foreground: 30 22% 60%;
+
+    --accent: 32 60% 60%;
+    --accent-foreground: 24 22% 10%;
+
+    --destructive: 0 60% 55%;
+    --destructive-foreground: 35 40% 90%;
+
+    --border: 24 18% 22%;
+    --input: 24 18% 22%;
+    --ring: 16 60% 57%;
+
+    --ink: 35 40% 92%;
+    --ink-soft: 30 22% 70%;
+    --cream: 24 22% 8%;
+    --cream-deep: 24 18% 12%;
+    --terracotta: 16 60% 57%;
+    --amber: 32 60% 60%;
+
+    --shadow-page: 0 10px 40px -10px hsl(0 0% 0% / 0.6);
+    --shadow-card: 0 4px 24px -8px hsl(0 0% 0% / 0.5);
+
+    --sidebar-background: 24 22% 10%;
+    --sidebar-foreground: 35 40% 88%;
+    --sidebar-primary: 16 60% 57%;
+    --sidebar-primary-foreground: 24 22% 10%;
+    --sidebar-accent: 24 16% 16%;
+    --sidebar-accent-foreground: 35 40% 88%;
+    --sidebar-border: 24 18% 22%;
+    --sidebar-ring: 16 60% 57%;
+  }
 }
 
 @layer base {
