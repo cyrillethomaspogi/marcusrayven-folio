@@ -19,6 +19,17 @@ interface Post {
 
 const Index = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("posts")
+      .select("id, title, excerpt, published_at, created_at")
+      .eq("published", true)
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .limit(20)
+      .then(({ data }) => setPosts((data ?? []) as Post[]));
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
