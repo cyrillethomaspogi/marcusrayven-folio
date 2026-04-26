@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import authorPortrait from "@/assets/author-portrait.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { useStories } from "@/hooks/useStories";
 
 const navLinks = [
   { label: "Works", href: "#works" },
   { label: "About", href: "#about" },
+  { label: "Find Me", href: "#profiles" },
   { label: "Blog", href: "#blog" },
   { label: "Contact", href: "#contact" },
 ];
@@ -19,8 +21,23 @@ interface Post {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
+  const { stories } = useStories();
+  const clickRef = useRef({ count: 0, timer: 0 as unknown as number });
+
+  const handleSecretClick = () => {
+    clickRef.current.count += 1;
+    window.clearTimeout(clickRef.current.timer);
+    clickRef.current.timer = window.setTimeout(() => {
+      clickRef.current.count = 0;
+    }, 1500);
+    if (clickRef.current.count >= 5) {
+      clickRef.current.count = 0;
+      navigate("/stories-admin");
+    }
+  };
 
   useEffect(() => {
     supabase
@@ -175,6 +192,56 @@ const Index = () => {
         </div>
       </section>
 
+      {/* FIND ME ON */}
+      <section id="profiles" className="py-24 md:py-32">
+        <div className="container max-w-5xl">
+          <div className="text-center mb-14 reveal">
+            <p className="font-label text-[11px] text-primary mb-4">Writing Profiles</p>
+            <h2 className="font-display text-4xl md:text-5xl">Find Me On</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-6 reveal">
+            {[
+              {
+                name: "Wattpad",
+                handle: "@redlinedboi on Wattpad",
+                line: "BL fiction, Omegaverse, and more.",
+                url: "https://www.wattpad.com/user/redlinedboi",
+                mark: "W",
+              },
+              {
+                name: "Dreame",
+                handle: "Marcus Rayven on Dreame",
+                line: "Premium stories, unlocked worlds.",
+                url: "https://www.dreame.com/author/4504265819",
+                mark: "D",
+              },
+            ].map((p) => (
+              <a
+                key={p.name}
+                href={p.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group bg-cream-deep/50 border border-border p-7 transition-all hover:-translate-y-1 hover:border-primary/60 hover:shadow-page flex gap-5 items-start"
+              >
+                <div className="shrink-0 w-14 h-14 border border-primary/40 flex items-center justify-center font-display text-2xl italic text-primary">
+                  {p.mark}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display text-2xl mb-1">{p.name}</h3>
+                  <p className="font-label text-[10px] text-foreground/50 mb-3 tracking-widest">
+                    {p.handle}
+                  </p>
+                  <p className="text-ink-soft text-sm leading-relaxed mb-5">{p.line}</p>
+                  <span className="inline-block font-label text-[11px] tracking-[0.2em] text-primary border-b border-primary/40 pb-1 group-hover:border-primary">
+                    Visit Profile →
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* WORKS */}
       <section id="works" className="py-28 md:py-40 bg-cream-deep/60">
         <div className="container max-w-6xl">
@@ -186,18 +253,59 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="reveal max-w-xl mx-auto text-center">
-            <p className="font-display italic text-2xl md:text-3xl text-ink-soft leading-relaxed mb-8">
-              New stories arriving soon.
-            </p>
-            <p className="text-ink-soft leading-relaxed">
-              The shelf is being arranged. Expect novelettes, longer works, and a few
-              quieter experiments — drift back in a little while.
-            </p>
-            <div className="ornament mt-12">
-              <span className="font-label text-[10px] text-foreground/50">in progress</span>
+          {stories.length === 0 ? (
+            <div className="reveal max-w-xl mx-auto text-center">
+              <p className="font-display italic text-2xl md:text-3xl text-ink-soft leading-relaxed mb-8">
+                New stories arriving soon.
+              </p>
+              <p className="text-ink-soft leading-relaxed">
+                The shelf is being arranged. Expect novelettes, longer works, and a few
+                quieter experiments — drift back in a little while.
+              </p>
+              <div className="ornament mt-12">
+                <span className="font-label text-[10px] text-foreground/50">in progress</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+              {stories.map((s, i) => (
+                <article
+                  key={s.id}
+                  className="reveal bg-background/60 border border-border/70 transition-all hover:-translate-y-1 hover:shadow-page"
+                  style={{ transitionDelay: `${i * 80}ms` }}
+                >
+                  <div className="aspect-[3/4] overflow-hidden bg-cream-deep">
+                    {s.cover ? (
+                      <img
+                        src={s.cover}
+                        alt={`Cover of ${s.title}`}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center font-display italic text-foreground/40">
+                        {s.title}
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    {s.genre && (
+                      <span className="inline-block font-label text-[9px] tracking-widest text-primary border border-primary/40 px-2 py-0.5 mb-3">
+                        {s.genre}
+                      </span>
+                    )}
+                    <h3 className="font-display text-2xl leading-tight mb-3">{s.title}</h3>
+                    {s.blurb && (
+                      <p className="text-ink-soft text-sm leading-relaxed mb-4">{s.blurb}</p>
+                    )}
+                    <p className="font-label text-[10px] text-foreground/50 tracking-widest">
+                      Published on {s.platform}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -317,7 +425,11 @@ const Index = () => {
           <p className="font-label text-[10px] text-foreground/60">
             © Marcus Rayven. All rights reserved.
           </p>
-          <p className="font-display italic text-sm text-foreground/50">
+          <p
+            className="font-display italic text-sm text-foreground/50 cursor-default select-none"
+            onClick={handleSecretClick}
+            title=""
+          >
             Set in Cormorant & Lora.
           </p>
         </div>
