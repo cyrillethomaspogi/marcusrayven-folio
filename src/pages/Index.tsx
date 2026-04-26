@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import authorPortrait from "@/assets/author-portrait.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { useStories } from "@/hooks/useStories";
 
 const navLinks = [
   { label: "Works", href: "#works" },
   { label: "About", href: "#about" },
+  { label: "Find Me", href: "#profiles" },
   { label: "Blog", href: "#blog" },
   { label: "Contact", href: "#contact" },
 ];
@@ -19,8 +21,23 @@ interface Post {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
+  const { stories } = useStories();
+  const clickRef = useRef({ count: 0, timer: 0 as unknown as number });
+
+  const handleSecretClick = () => {
+    clickRef.current.count += 1;
+    window.clearTimeout(clickRef.current.timer);
+    clickRef.current.timer = window.setTimeout(() => {
+      clickRef.current.count = 0;
+    }, 1500);
+    if (clickRef.current.count >= 5) {
+      clickRef.current.count = 0;
+      navigate("/stories-admin");
+    }
+  };
 
   useEffect(() => {
     supabase
