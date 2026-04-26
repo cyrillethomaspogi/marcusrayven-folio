@@ -425,7 +425,11 @@ const Index = () => {
           <p className="font-label text-[10px] text-foreground/60">
             © Marcus Rayven. All rights reserved.
           </p>
-          <p className="font-display italic text-sm text-foreground/50">
+          <p
+            className="font-display italic text-sm text-foreground/50 cursor-default select-none"
+            onClick={handleSecretClick}
+            title=""
+          >
             Set in Cormorant & Lora.
           </p>
         </div>
