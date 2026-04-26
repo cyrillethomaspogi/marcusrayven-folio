@@ -19,6 +19,15 @@
   <meta name="twitter:title" content="Marcus Rayven — Author of BL Fiction &amp; Dark Romance">
   <meta property="og:description" content="Official site of Marcus Rayven — BL fiction, dark romance, and supernatural literary novels. Stories that linger long after the last page.">
   <meta name="twitter:description" content="Official site of Marcus Rayven — BL fiction, dark romance, and supernatural literary novels. Stories that linger long after the last page.">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('mr.theme');
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      } catch (e) {}
+    })();
+  </script>
 </head>
 
   <body>
