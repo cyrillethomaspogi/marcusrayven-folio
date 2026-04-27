@@ -155,8 +155,100 @@ const Admin = () => {
     else setPosts((data ?? []) as Post[]);
   };
 
+  const loadGuestbook = async () => {
+    const [{ data: e }, { data: r }, { data: rep }] = await Promise.all([
+      supabase
+        .from("guestbook_entries")
+        .select("id, nickname, message, created_at")
+        .order("created_at", { ascending: false })
+        .limit(500),
+      supabase.from("guestbook_reactions").select("id, entry_id, user_id, reaction"),
+      supabase
+        .from("guestbook_replies")
+        .select("id, entry_id, user_id, message, created_at, updated_at")
+        .order("created_at", { ascending: true }),
+    ]);
+    setGbEntries((e ?? []) as GuestbookEntry[]);
+    setGbReactions((r ?? []) as GuestbookReaction[]);
+    setGbReplies((rep ?? []) as GuestbookReply[]);
+  };
+
+  const toggleReaction = async (entryId: string, reaction: "like" | "heart") => {
+    if (!session) return;
+    const existing = gbReactions.find(
+      (r) => r.entry_id === entryId && r.user_id === session.user.id && r.reaction === reaction,
+    );
+    if (existing) {
+      const { error } = await supabase.from("guestbook_reactions").delete().eq("id", existing.id);
+      if (error) setError(error.message);
+      else setGbReactions((prev) => prev.filter((r) => r.id !== existing.id));
+    } else {
+      const { data, error } = await supabase
+        .from("guestbook_reactions")
+        .insert({ entry_id: entryId, user_id: session.user.id, reaction })
+        .select()
+        .single();
+      if (error) setError(error.message);
+      else if (data) setGbReactions((prev) => [...prev, data as GuestbookReaction]);
+    }
+  };
+
+  const sendReply = async (entryId: string) => {
+    if (!session) return;
+    const text = (replyDrafts[entryId] ?? "").trim();
+    if (!text) return;
+    const { data, error } = await supabase
+      .from("guestbook_replies")
+      .insert({ entry_id: entryId, user_id: session.user.id, message: text })
+      .select()
+      .single();
+    if (error) setError(error.message);
+    else if (data) {
+      setGbReplies((prev) => [...prev, data as GuestbookReply]);
+      setReplyDrafts((prev) => ({ ...prev, [entryId]: "" }));
+    }
+  };
+
+  const saveReplyEdit = async (id: string) => {
+    const text = editingReplyText.trim();
+    if (!text) return;
+    const { data, error } = await supabase
+      .from("guestbook_replies")
+      .update({ message: text })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) setError(error.message);
+    else if (data) {
+      setGbReplies((prev) => prev.map((r) => (r.id === id ? (data as GuestbookReply) : r)));
+      setEditingReplyId(null);
+      setEditingReplyText("");
+    }
+  };
+
+  const deleteReply = async (id: string) => {
+    if (!confirm("Delete this reply?")) return;
+    const { error } = await supabase.from("guestbook_replies").delete().eq("id", id);
+    if (error) setError(error.message);
+    else setGbReplies((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const deleteEntry = async (id: string) => {
+    if (!confirm("Delete this guestbook entry? Reactions and replies will also be removed.")) return;
+    const { error } = await supabase.from("guestbook_entries").delete().eq("id", id);
+    if (error) setError(error.message);
+    else {
+      setGbEntries((prev) => prev.filter((e) => e.id !== id));
+      setGbReactions((prev) => prev.filter((r) => r.entry_id !== id));
+      setGbReplies((prev) => prev.filter((r) => r.entry_id !== id));
+    }
+  };
+
   useEffect(() => {
-    if (isAdmin) loadPosts();
+    if (isAdmin) {
+      loadPosts();
+      loadGuestbook();
+    }
   }, [isAdmin]);
 
   const savePost = async () => {
