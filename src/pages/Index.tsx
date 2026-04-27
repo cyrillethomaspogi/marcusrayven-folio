@@ -101,8 +101,9 @@ const Index = () => {
         }`}
       >
         <div className="container flex items-center justify-between">
-          <a href="#top" className="font-display text-xl md:text-2xl tracking-tight">
-            <span className="italic text-primary">M</span>arcus Rayven
+          <a href="#top" className="flex items-center gap-2.5 font-display text-xl md:text-2xl tracking-tight">
+            <img src={logoMark} alt="Marcus Rayven raven & quill mark" className="h-8 md:h-9 w-auto" />
+            <span><span className="italic text-primary">M</span>arcus Rayven</span>
           </a>
           <nav className="hidden md:flex items-center gap-9">
             {navLinks.map((l) => (
@@ -274,46 +275,37 @@ const Index = () => {
             <p className="font-label text-[11px] text-primary mb-4">Writing Profiles</p>
             <h2 className="font-display text-4xl md:text-5xl">Find Me On</h2>
           </div>
-          <div className="grid sm:grid-cols-2 gap-6 reveal">
-            {[
-              {
-                name: "Wattpad",
-                handle: "@redlinedboi on Wattpad",
-                line: "BL fiction, Omegaverse, and more.",
-                url: "https://www.wattpad.com/user/redlinedboi",
-                mark: "W",
-              },
-              {
-                name: "Dreame",
-                handle: "Marcus Rayven on Dreame",
-                line: "Premium stories, unlocked worlds.",
-                url: "https://www.dreame.com/author/4504265819",
-                mark: "D",
-              },
-            ].map((p) => (
-              <a
-                key={p.name}
-                href={p.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group bg-cream-deep/50 border border-border p-7 transition-all hover:-translate-y-1 hover:border-primary/60 hover:shadow-page flex gap-5 items-start"
-              >
-                <div className="shrink-0 w-14 h-14 border border-primary/40 flex items-center justify-center font-display text-2xl italic text-primary">
-                  {p.mark}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display text-2xl mb-1">{p.name}</h3>
-                  <p className="font-label text-[10px] text-foreground/50 mb-3 tracking-widest">
-                    {p.handle}
-                  </p>
-                  <p className="text-ink-soft text-sm leading-relaxed mb-5">{p.line}</p>
-                  <span className="inline-block font-label text-[11px] tracking-[0.2em] text-primary border-b border-primary/40 pb-1 group-hover:border-primary">
-                    Visit Profile →
-                  </span>
-                </div>
-              </a>
-            ))}
-          </div>
+          {platforms.length === 0 ? (
+            <p className="reveal text-center font-display italic text-xl text-ink-soft">
+              New writing homes coming soon.
+            </p>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-6 reveal">
+              {platforms.map((p) => (
+                <a
+                  key={p.id}
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group bg-cream-deep/50 border border-border p-7 transition-all hover:-translate-y-1 hover:border-primary/60 hover:shadow-page flex gap-5 items-start"
+                >
+                  <div className="shrink-0 w-14 h-14 border border-primary/40 flex items-center justify-center font-display text-2xl italic text-primary">
+                    {p.mark}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-display text-2xl mb-1">{p.name}</h3>
+                    <p className="font-label text-[10px] text-foreground/50 mb-3 tracking-widest">
+                      {p.handle}
+                    </p>
+                    <p className="text-ink-soft text-sm leading-relaxed mb-5">{p.line}</p>
+                    <span className="inline-block font-label text-[11px] tracking-[0.2em] text-primary border-b border-primary/40 pb-1 group-hover:border-primary">
+                      Visit Profile →
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
