@@ -87,6 +87,14 @@ const Admin = () => {
   const [playlistInput, setPlaylistInput] = useState(playlistUrl);
   const [playlistSaved, setPlaylistSaved] = useState(false);
 
+  // Guestbook state
+  const [gbEntries, setGbEntries] = useState<GuestbookEntry[]>([]);
+  const [gbReactions, setGbReactions] = useState<GuestbookReaction[]>([]);
+  const [gbReplies, setGbReplies] = useState<GuestbookReply[]>([]);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [editingReplyText, setEditingReplyText] = useState("");
+
   useEffect(() => {
     setPlaylistInput(playlistUrl);
   }, [playlistUrl]);
