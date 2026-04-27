@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import { useStories, type Story } from "@/hooks/useStories";
 import { usePlaylist, DEFAULT_PLAYLIST_URL } from "@/hooks/usePlaylist";
+import { usePlatforms, type Platform } from "@/hooks/usePlatforms";
 
 interface Post {
   id: string;
@@ -24,8 +25,15 @@ const emptyStory: Omit<Story, "id"> = {
   platform: "Wattpad",
   cover: "",
 };
+const emptyPlatform: Omit<Platform, "id"> = {
+  name: "",
+  handle: "",
+  line: "",
+  url: "",
+  mark: "",
+};
 
-type Tab = "posts" | "stories" | "playlist";
+type Tab = "posts" | "stories" | "platforms" | "playlist";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -46,6 +54,12 @@ const Admin = () => {
     Story | (Omit<Story, "id"> & { id?: string }) | null
   >(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Platforms state
+  const { platforms, addPlatform, updatePlatform, deletePlatform } = usePlatforms();
+  const [editingPlatform, setEditingPlatform] = useState<
+    Platform | (Omit<Platform, "id"> & { id?: string }) | null
+  >(null);
 
   // Playlist state
   const { url: playlistUrl, save: savePlaylist, reset: resetPlaylist } = usePlaylist();
@@ -248,6 +262,7 @@ const Admin = () => {
         setTab(id);
         setEditingPost(null);
         setEditingStory(null);
+        setEditingPlatform(null);
       }}
       className={`font-label text-[10px] tracking-widest px-4 py-2 border-b-2 transition-colors ${
         tab === id
@@ -283,6 +298,7 @@ const Admin = () => {
         <div className="flex gap-2 border-b border-border mb-10">
           {tabBtn("posts", "Posts")}
           {tabBtn("stories", "Stories")}
+          {tabBtn("platforms", "Platforms")}
           {tabBtn("playlist", "Playlist")}
         </div>
 
@@ -528,10 +544,17 @@ const Admin = () => {
                         }
                         className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
                       >
-                        <option>Wattpad</option>
-                        <option>Dreame</option>
-                        <option>Original / Unpublished</option>
+                        {platforms.map((p) => (
+                          <option key={p.id} value={p.name}>{p.name}</option>
+                        ))}
+                        {!platforms.some((p) => p.name === editingStory.platform) && editingStory.platform && (
+                          <option value={editingStory.platform}>{editingStory.platform}</option>
+                        )}
+                        <option value="Original / Unpublished">Original / Unpublished</option>
                       </select>
+                      <p className="font-label text-[9px] text-foreground/40 mt-1">
+                        Manage the list in the Platforms tab.
+                      </p>
                     </div>
 
                     <div className="flex gap-3 pt-2">
@@ -603,6 +626,176 @@ const Admin = () => {
                             <button
                               onClick={() => removeStory(s.id, s.title)}
                               className="flex-1 font-label text-[10px] px-3 py-2 text-destructive border border-transparent hover:border-destructive"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+
+        {/* PLATFORMS TAB */}
+        {tab === "platforms" && (
+          <>
+            {editingPlatform ? (
+              <div className="bg-cream-deep/40 border border-border p-8 max-w-2xl">
+                <h2 className="font-display text-2xl mb-6">
+                  {editingPlatform.id ? "Edit platform" : "New platform"}
+                </h2>
+                <div className="space-y-5">
+                  <div className="grid grid-cols-[1fr_120px] gap-4">
+                    <div>
+                      <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        value={editingPlatform.name}
+                        onChange={(e) =>
+                          setEditingPlatform({ ...editingPlatform, name: e.target.value })
+                        }
+                        placeholder="Wattpad"
+                        className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                        Mark (1 char)
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={2}
+                        value={editingPlatform.mark}
+                        onChange={(e) =>
+                          setEditingPlatform({ ...editingPlatform, mark: e.target.value })
+                        }
+                        placeholder="W"
+                        className="w-full bg-background border border-border px-4 py-3 font-display text-xl text-center focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                      Handle / display label
+                    </label>
+                    <input
+                      type="text"
+                      value={editingPlatform.handle}
+                      onChange={(e) =>
+                        setEditingPlatform({ ...editingPlatform, handle: e.target.value })
+                      }
+                      placeholder="@redlinedboi on Wattpad"
+                      className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                      Profile URL
+                    </label>
+                    <input
+                      type="url"
+                      value={editingPlatform.url}
+                      onChange={(e) =>
+                        setEditingPlatform({ ...editingPlatform, url: e.target.value })
+                      }
+                      placeholder="https://..."
+                      className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                      One-liner
+                    </label>
+                    <textarea
+                      value={editingPlatform.line}
+                      onChange={(e) =>
+                        setEditingPlatform({ ...editingPlatform, line: e.target.value })
+                      }
+                      rows={2}
+                      placeholder="BL fiction, Omegaverse, and more."
+                      className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={() => {
+                        if (!editingPlatform.name.trim()) {
+                          alert("Name is required.");
+                          return;
+                        }
+                        if (editingPlatform.id) {
+                          updatePlatform(editingPlatform.id, editingPlatform);
+                        } else {
+                          addPlatform({
+                            name: editingPlatform.name,
+                            handle: editingPlatform.handle,
+                            line: editingPlatform.line,
+                            url: editingPlatform.url,
+                            mark: editingPlatform.mark || editingPlatform.name.charAt(0).toUpperCase(),
+                          });
+                        }
+                        setEditingPlatform(null);
+                      }}
+                      className="bg-primary text-primary-foreground font-label text-xs px-6 py-3 hover:bg-primary/90"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditingPlatform(null)}
+                      className="font-label text-xs px-6 py-3 border border-border hover:border-primary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => setEditingPlatform({ ...emptyPlatform })}
+                  className="bg-primary text-primary-foreground font-label text-xs px-6 py-3 hover:bg-primary/90 mb-10"
+                >
+                  + New platform
+                </button>
+
+                {platforms.length === 0 ? (
+                  <p className="text-ink-soft italic font-display text-xl">
+                    No platforms yet. Add one.
+                  </p>
+                ) : (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {platforms.map((p) => (
+                      <article
+                        key={p.id}
+                        className="bg-cream-deep/40 border border-border p-5 flex gap-4 items-start"
+                      >
+                        <div className="shrink-0 w-12 h-12 border border-primary/40 flex items-center justify-center font-display text-xl italic text-primary">
+                          {p.mark}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-display text-lg truncate">{p.name}</h3>
+                          <p className="font-label text-[9px] text-foreground/50 tracking-widest truncate">
+                            {p.handle}
+                          </p>
+                          <p className="text-ink-soft text-xs mt-1 line-clamp-2">{p.line}</p>
+                          <div className="flex gap-2 mt-3">
+                            <button
+                              onClick={() => setEditingPlatform(p)}
+                              className="font-label text-[10px] px-3 py-1.5 border border-border hover:border-primary"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Delete "${p.name}"?`)) deletePlatform(p.id);
+                              }}
+                              className="font-label text-[10px] px-3 py-1.5 text-destructive border border-transparent hover:border-destructive"
                             >
                               Delete
                             </button>
