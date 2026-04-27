@@ -416,11 +416,12 @@ const Admin = () => {
           </div>
         </div>
 
-        <div className="flex gap-2 border-b border-border mb-10">
+        <div className="flex gap-2 border-b border-border mb-10 flex-wrap">
           {tabBtn("posts", "Posts")}
           {tabBtn("stories", "Stories")}
           {tabBtn("platforms", "Platforms")}
           {tabBtn("playlist", "Playlist")}
+          {tabBtn("guestbook", "Guestbook")}
         </div>
 
         {error && <p className="text-destructive text-sm mb-6">{error}</p>}
