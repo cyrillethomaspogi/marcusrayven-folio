@@ -33,7 +33,28 @@ const emptyPlatform: Omit<Platform, "id"> = {
   mark: "",
 };
 
-type Tab = "posts" | "stories" | "platforms" | "playlist";
+type Tab = "posts" | "stories" | "platforms" | "playlist" | "guestbook";
+
+interface GuestbookEntry {
+  id: string;
+  nickname: string;
+  message: string;
+  created_at: string;
+}
+interface GuestbookReaction {
+  id: string;
+  entry_id: string;
+  user_id: string;
+  reaction: "like" | "heart";
+}
+interface GuestbookReply {
+  id: string;
+  entry_id: string;
+  user_id: string;
+  message: string;
+  created_at: string;
+  updated_at: string;
+}
 
 const Admin = () => {
   const navigate = useNavigate();
