@@ -178,6 +178,13 @@ const Guestbook = () => {
                   month: "long",
                   day: "2-digit",
                 });
+                const likeCount = reactions.filter(
+                  (r) => r.entry_id === entry.id && r.reaction === "like",
+                ).length;
+                const heartCount = reactions.filter(
+                  (r) => r.entry_id === entry.id && r.reaction === "heart",
+                ).length;
+                const entryReplies = replies.filter((r) => r.entry_id === entry.id);
                 return (
                   <li key={entry.id} className="py-8">
                     <div className="flex items-baseline justify-between gap-4 mb-3">
@@ -191,6 +198,27 @@ const Guestbook = () => {
                     <p className="text-base md:text-lg leading-relaxed text-ink-soft whitespace-pre-wrap">
                       {entry.message}
                     </p>
+                    {(likeCount > 0 || heartCount > 0) && (
+                      <div className="flex gap-3 mt-3 font-label text-[10px] text-foreground/60">
+                        {likeCount > 0 && <span>👍 {likeCount}</span>}
+                        {heartCount > 0 && <span>♥ {heartCount}</span>}
+                        <span className="text-foreground/40">— from Marcus</span>
+                      </div>
+                    )}
+                    {entryReplies.length > 0 && (
+                      <ul className="mt-5 pl-5 border-l-2 border-primary/40 space-y-4">
+                        {entryReplies.map((rep) => (
+                          <li key={rep.id}>
+                            <p className="font-label text-[10px] tracking-widest text-primary mb-1">
+                              Marcus replied
+                            </p>
+                            <p className="text-base leading-relaxed text-ink-soft whitespace-pre-wrap">
+                              {rep.message}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 );
               })}
