@@ -985,6 +985,183 @@ const Admin = () => {
             </div>
           </div>
         )}
+
+        {/* GUESTBOOK TAB */}
+        {tab === "guestbook" && (
+          <>
+            {gbEntries.length === 0 ? (
+              <p className="text-ink-soft italic font-display text-xl">
+                No guestbook entries yet.
+              </p>
+            ) : (
+              <ul className="space-y-6">
+                {gbEntries.map((entry) => {
+                  const myLike = gbReactions.find(
+                    (r) =>
+                      r.entry_id === entry.id &&
+                      r.user_id === session?.user.id &&
+                      r.reaction === "like",
+                  );
+                  const myHeart = gbReactions.find(
+                    (r) =>
+                      r.entry_id === entry.id &&
+                      r.user_id === session?.user.id &&
+                      r.reaction === "heart",
+                  );
+                  const likeCount = gbReactions.filter(
+                    (r) => r.entry_id === entry.id && r.reaction === "like",
+                  ).length;
+                  const heartCount = gbReactions.filter(
+                    (r) => r.entry_id === entry.id && r.reaction === "heart",
+                  ).length;
+                  const replies = gbReplies.filter((r) => r.entry_id === entry.id);
+                  const date = new Date(entry.created_at).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "2-digit",
+                  });
+                  return (
+                    <li
+                      key={entry.id}
+                      className="bg-cream-deep/40 border border-border p-6"
+                    >
+                      <div className="flex items-baseline justify-between gap-4 mb-2">
+                        <p className="font-display italic text-xl text-primary">
+                          {entry.nickname}
+                        </p>
+                        <p className="font-label text-[10px] text-foreground/50 shrink-0">
+                          {date}
+                        </p>
+                      </div>
+                      <p className="text-base leading-relaxed text-ink-soft whitespace-pre-wrap mb-4">
+                        {entry.message}
+                      </p>
+
+                      <div className="flex items-center gap-2 mb-4">
+                        <button
+                          onClick={() => toggleReaction(entry.id, "like")}
+                          className={`font-label text-[10px] tracking-widest px-3 py-1.5 border transition-colors ${
+                            myLike
+                              ? "border-primary text-primary bg-primary/10"
+                              : "border-border text-foreground/60 hover:border-primary"
+                          }`}
+                        >
+                          👍 Like {likeCount > 0 && `· ${likeCount}`}
+                        </button>
+                        <button
+                          onClick={() => toggleReaction(entry.id, "heart")}
+                          className={`font-label text-[10px] tracking-widest px-3 py-1.5 border transition-colors ${
+                            myHeart
+                              ? "border-primary text-primary bg-primary/10"
+                              : "border-border text-foreground/60 hover:border-primary"
+                          }`}
+                        >
+                          ♥ Heart {heartCount > 0 && `· ${heartCount}`}
+                        </button>
+                        <button
+                          onClick={() => deleteEntry(entry.id)}
+                          className="ml-auto font-label text-[10px] text-destructive hover:underline"
+                        >
+                          Delete entry
+                        </button>
+                      </div>
+
+                      {replies.length > 0 && (
+                        <ul className="space-y-3 mb-4 pl-4 border-l-2 border-primary/30">
+                          {replies.map((rep) => (
+                            <li key={rep.id}>
+                              <div className="flex items-baseline justify-between gap-3 mb-1">
+                                <p className="font-label text-[10px] tracking-widest text-primary">
+                                  Marcus replied
+                                </p>
+                                <p className="font-label text-[9px] text-foreground/50">
+                                  {new Date(rep.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                              {editingReplyId === rep.id ? (
+                                <div className="space-y-2">
+                                  <textarea
+                                    value={editingReplyText}
+                                    onChange={(e) => setEditingReplyText(e.target.value)}
+                                    rows={3}
+                                    className="w-full bg-background border border-border px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                                  />
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => saveReplyEdit(rep.id)}
+                                      className="bg-primary text-primary-foreground font-label text-[10px] px-3 py-1.5"
+                                    >
+                                      Save
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setEditingReplyId(null);
+                                        setEditingReplyText("");
+                                      }}
+                                      className="font-label text-[10px] px-3 py-1.5 border border-border"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <p className="text-sm text-ink-soft whitespace-pre-wrap">
+                                    {rep.message}
+                                  </p>
+                                  <div className="flex gap-3 mt-1">
+                                    <button
+                                      onClick={() => {
+                                        setEditingReplyId(rep.id);
+                                        setEditingReplyText(rep.message);
+                                      }}
+                                      className="font-label text-[9px] text-foreground/50 hover:text-primary"
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() => deleteReply(rep.id)}
+                                      className="font-label text-[9px] text-destructive hover:underline"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                      <div className="flex gap-2">
+                        <textarea
+                          value={replyDrafts[entry.id] ?? ""}
+                          onChange={(e) =>
+                            setReplyDrafts((prev) => ({
+                              ...prev,
+                              [entry.id]: e.target.value,
+                            }))
+                          }
+                          rows={2}
+                          maxLength={2000}
+                          placeholder="Write a reply…"
+                          className="flex-1 bg-background border border-border px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                        />
+                        <button
+                          onClick={() => sendReply(entry.id)}
+                          disabled={!(replyDrafts[entry.id] ?? "").trim()}
+                          className="bg-primary text-primary-foreground font-label text-[10px] px-4 self-stretch hover:bg-primary/90 disabled:opacity-50"
+                        >
+                          Reply
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
