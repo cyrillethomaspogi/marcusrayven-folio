@@ -55,6 +55,12 @@ const Admin = () => {
   >(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Platforms state
+  const { platforms, addPlatform, updatePlatform, deletePlatform } = usePlatforms();
+  const [editingPlatform, setEditingPlatform] = useState<
+    Platform | (Omit<Platform, "id"> & { id?: string }) | null
+  >(null);
+
   // Playlist state
   const { url: playlistUrl, save: savePlaylist, reset: resetPlaylist } = usePlaylist();
   const [playlistInput, setPlaylistInput] = useState(playlistUrl);
