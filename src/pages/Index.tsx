@@ -40,7 +40,7 @@ const Index = () => {
     }, 1500);
     if (clickRef.current.count >= 5) {
       clickRef.current.count = 0;
-      navigate("/stories-admin");
+      navigate("/admin");
     }
   };
 

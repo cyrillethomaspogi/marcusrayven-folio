@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
 import Admin from "./pages/Admin.tsx";
-import StoriesAdmin from "./pages/StoriesAdmin.tsx";
 import Guestbook from "./pages/Guestbook.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -22,7 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="/stories-admin" element={<StoriesAdmin />} />
+          <Route path="/stories-admin" element={<Admin />} />
           <Route path="/guestbook" element={<Guestbook />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

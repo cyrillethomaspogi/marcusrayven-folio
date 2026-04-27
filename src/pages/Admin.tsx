@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
+import { useStories, type Story } from "@/hooks/useStories";
+import { usePlaylist, DEFAULT_PLAYLIST_URL } from "@/hooks/usePlaylist";
 
 interface Post {
   id: string;
@@ -14,17 +16,45 @@ interface Post {
   updated_at: string;
 }
 
-const empty = { title: "", excerpt: "", content: "", published: false };
+const emptyPost = { title: "", excerpt: "", content: "", published: false };
+const emptyStory: Omit<Story, "id"> = {
+  title: "",
+  genre: "",
+  blurb: "",
+  platform: "Wattpad",
+  cover: "",
+};
+
+type Tab = "posts" | "stories" | "playlist";
 
 const Admin = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [adminCount, setAdminCount] = useState<number | null>(null);
+  const [tab, setTab] = useState<Tab>("posts");
+
+  // Posts state
   const [posts, setPosts] = useState<Post[]>([]);
-  const [editing, setEditing] = useState<Post | typeof empty | null>(null);
+  const [editingPost, setEditingPost] = useState<Post | typeof emptyPost | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Stories state
+  const { stories, addStory, updateStory, deleteStory } = useStories();
+  const [editingStory, setEditingStory] = useState<
+    Story | (Omit<Story, "id"> & { id?: string }) | null
+  >(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Playlist state
+  const { url: playlistUrl, save: savePlaylist, reset: resetPlaylist } = usePlaylist();
+  const [playlistInput, setPlaylistInput] = useState(playlistUrl);
+  const [playlistSaved, setPlaylistSaved] = useState(false);
+
+  useEffect(() => {
+    setPlaylistInput(playlistUrl);
+  }, [playlistUrl]);
 
   // Auth + admin check
   useEffect(() => {
@@ -41,14 +71,12 @@ const Admin = () => {
     }
 
     (async () => {
-      // Count admins (via head + count)
       const { count } = await supabase
         .from("user_roles")
         .select("*", { count: "exact", head: true })
         .eq("role", "admin");
       setAdminCount(count ?? 0);
 
-      // Check if current user is admin
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
@@ -88,23 +116,24 @@ const Admin = () => {
     if (isAdmin) loadPosts();
   }, [isAdmin]);
 
-  const save = async () => {
-    if (!editing) return;
+  const savePost = async () => {
+    if (!editingPost) return;
     setBusy(true);
     setError(null);
 
     const payload = {
-      title: editing.title,
-      excerpt: editing.excerpt,
-      content: editing.content,
-      published: editing.published,
-      published_at: editing.published
-        ? ("published_at" in editing && editing.published_at) || new Date().toISOString()
+      title: editingPost.title,
+      excerpt: editingPost.excerpt,
+      content: editingPost.content,
+      published: editingPost.published,
+      published_at: editingPost.published
+        ? ("published_at" in editingPost && editingPost.published_at) ||
+          new Date().toISOString()
         : null,
     };
 
-    if ("id" in editing && editing.id) {
-      const { error } = await supabase.from("posts").update(payload).eq("id", editing.id);
+    if ("id" in editingPost && editingPost.id) {
+      const { error } = await supabase.from("posts").update(payload).eq("id", editingPost.id);
       if (error) setError(error.message);
     } else {
       const { error } = await supabase.from("posts").insert(payload);
@@ -113,16 +142,56 @@ const Admin = () => {
 
     setBusy(false);
     if (!error) {
-      setEditing(null);
+      setEditingPost(null);
       loadPosts();
     }
   };
 
-  const remove = async (id: string) => {
+  const removePost = async (id: string) => {
     if (!confirm("Delete this post?")) return;
     const { error } = await supabase.from("posts").delete().eq("id", id);
     if (error) setError(error.message);
     else loadPosts();
+  };
+
+  // Story handlers
+  const handleCover = (file: File) => {
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      alert("Image too large (max 3MB).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (editingStory) setEditingStory({ ...editingStory, cover: String(reader.result) });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const saveStory = () => {
+    if (!editingStory) return;
+    if (!editingStory.title.trim()) {
+      alert("Title is required.");
+      return;
+    }
+    if (editingStory.id) {
+      updateStory(editingStory.id, editingStory);
+    } else {
+      addStory({
+        title: editingStory.title,
+        genre: editingStory.genre,
+        blurb: editingStory.blurb,
+        platform: editingStory.platform,
+        cover: editingStory.cover,
+      });
+    }
+    setEditingStory(null);
+  };
+
+  const removeStory = (id: string, title: string) => {
+    if (confirm(`Delete "${title}"? This cannot be undone.`)) {
+      deleteStory(id);
+    }
   };
 
   const signOut = async () => {
@@ -131,10 +200,13 @@ const Admin = () => {
   };
 
   if (session === null || isAdmin === null) {
-    return <div className="min-h-screen flex items-center justify-center text-ink-soft">Loading…</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-ink-soft">
+        Loading…
+      </div>
+    );
   }
 
-  // Logged in but not admin
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
@@ -170,11 +242,27 @@ const Admin = () => {
     );
   }
 
-  // Admin view
+  const tabBtn = (id: Tab, label: string) => (
+    <button
+      onClick={() => {
+        setTab(id);
+        setEditingPost(null);
+        setEditingStory(null);
+      }}
+      className={`font-label text-[10px] tracking-widest px-4 py-2 border-b-2 transition-colors ${
+        tab === id
+          ? "border-primary text-primary"
+          : "border-transparent text-foreground/50 hover:text-foreground"
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div className="min-h-screen px-6 py-12">
-      <div className="container max-w-4xl">
-        <div className="flex items-center justify-between mb-12">
+      <div className="container max-w-5xl">
+        <div className="flex items-center justify-between mb-10">
           <div>
             <p className="font-label text-[10px] text-primary mb-2">Private · Author</p>
             <h1 className="font-display text-4xl md:text-5xl">Writing Desk</h1>
@@ -192,122 +280,395 @@ const Admin = () => {
           </div>
         </div>
 
+        <div className="flex gap-2 border-b border-border mb-10">
+          {tabBtn("posts", "Posts")}
+          {tabBtn("stories", "Stories")}
+          {tabBtn("playlist", "Playlist")}
+        </div>
+
         {error && <p className="text-destructive text-sm mb-6">{error}</p>}
 
-        {editing ? (
-          <div className="bg-cream-deep/40 border border-border p-8">
-            <h2 className="font-display text-2xl mb-6">
-              {"id" in editing && editing.id ? "Edit post" : "New post"}
-            </h2>
-            <div className="space-y-5">
-              <div>
-                <label className="font-label text-[10px] text-foreground/60 block mb-2">Title</label>
-                <input
-                  type="text"
-                  value={editing.title}
-                  onChange={(e) => setEditing({ ...editing, title: e.target.value })}
-                  className="w-full bg-background border border-border px-4 py-3 font-display text-2xl focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="font-label text-[10px] text-foreground/60 block mb-2">Excerpt</label>
-                <textarea
-                  value={editing.excerpt}
-                  onChange={(e) => setEditing({ ...editing, excerpt: e.target.value })}
-                  rows={2}
-                  className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="font-label text-[10px] text-foreground/60 block mb-2">Content</label>
-                <textarea
-                  value={editing.content}
-                  onChange={(e) => setEditing({ ...editing, content: e.target.value })}
-                  rows={14}
-                  className="w-full bg-background border border-border px-4 py-3 font-body leading-relaxed focus:outline-none focus:border-primary"
-                />
-              </div>
-              <label className="flex items-center gap-3 font-label text-xs">
-                <input
-                  type="checkbox"
-                  checked={editing.published}
-                  onChange={(e) => setEditing({ ...editing, published: e.target.checked })}
-                  className="accent-primary"
-                />
-                Publish (visible to visitors)
-              </label>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={save}
-                  disabled={busy || !editing.title.trim()}
-                  className="bg-primary text-primary-foreground font-label text-xs px-6 py-3 hover:bg-primary/90 disabled:opacity-50"
-                >
-                  {busy ? "Saving…" : "Save"}
-                </button>
-                <button
-                  onClick={() => setEditing(null)}
-                  className="font-label text-xs px-6 py-3 border border-border hover:border-primary"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
+        {/* POSTS TAB */}
+        {tab === "posts" && (
           <>
-            <button
-              onClick={() => setEditing({ ...empty })}
-              className="bg-primary text-primary-foreground font-label text-xs px-6 py-3 hover:bg-primary/90 mb-10"
-            >
-              + New post
-            </button>
+            {editingPost ? (
+              <div className="bg-cream-deep/40 border border-border p-8">
+                <h2 className="font-display text-2xl mb-6">
+                  {"id" in editingPost && editingPost.id ? "Edit post" : "New post"}
+                </h2>
+                <div className="space-y-5">
+                  <div>
+                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={editingPost.title}
+                      onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 font-display text-2xl focus:outline-none focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                      Excerpt
+                    </label>
+                    <textarea
+                      value={editingPost.excerpt}
+                      onChange={(e) =>
+                        setEditingPost({ ...editingPost, excerpt: e.target.value })
+                      }
+                      rows={2}
+                      className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                      Content
+                    </label>
+                    <textarea
+                      value={editingPost.content}
+                      onChange={(e) =>
+                        setEditingPost({ ...editingPost, content: e.target.value })
+                      }
+                      rows={14}
+                      className="w-full bg-background border border-border px-4 py-3 font-body leading-relaxed focus:outline-none focus:border-primary"
+                    />
+                  </div>
+                  <label className="flex items-center gap-3 font-label text-xs">
+                    <input
+                      type="checkbox"
+                      checked={editingPost.published}
+                      onChange={(e) =>
+                        setEditingPost({ ...editingPost, published: e.target.checked })
+                      }
+                      className="accent-primary"
+                    />
+                    Publish (visible to visitors)
+                  </label>
 
-            {posts.length === 0 ? (
-              <p className="text-ink-soft italic font-display text-xl">No posts yet. Begin.</p>
-            ) : (
-              <div className="divide-y divide-border">
-                {posts.map((p) => (
-                  <article key={p.id} className="py-6 flex items-start justify-between gap-6">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-1">
-                        <span
-                          className={`font-label text-[9px] px-2 py-0.5 rounded-full ${
-                            p.published
-                              ? "bg-primary/15 text-primary"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {p.published ? "Published" : "Draft"}
-                        </span>
-                        <span className="font-label text-[10px] text-foreground/50">
-                          {new Date(p.updated_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <h3 className="font-display text-2xl truncate">{p.title}</h3>
-                      {p.excerpt && (
-                        <p className="text-ink-soft text-sm mt-1 line-clamp-2">{p.excerpt}</p>
-                      )}
-                    </div>
-                    <div className="flex gap-2 shrink-0">
-                      <button
-                        onClick={() => setEditing(p)}
-                        className="font-label text-[10px] px-3 py-2 border border-border hover:border-primary"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => remove(p.id)}
-                        className="font-label text-[10px] px-3 py-2 text-destructive border border-transparent hover:border-destructive"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </article>
-                ))}
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={savePost}
+                      disabled={busy || !editingPost.title.trim()}
+                      className="bg-primary text-primary-foreground font-label text-xs px-6 py-3 hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {busy ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      onClick={() => setEditingPost(null)}
+                      className="font-label text-xs px-6 py-3 border border-border hover:border-primary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
               </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => setEditingPost({ ...emptyPost })}
+                  className="bg-primary text-primary-foreground font-label text-xs px-6 py-3 hover:bg-primary/90 mb-10"
+                >
+                  + New post
+                </button>
+
+                {posts.length === 0 ? (
+                  <p className="text-ink-soft italic font-display text-xl">
+                    No posts yet. Begin.
+                  </p>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {posts.map((p) => (
+                      <article
+                        key={p.id}
+                        className="py-6 flex items-start justify-between gap-6"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-1">
+                            <span
+                              className={`font-label text-[9px] px-2 py-0.5 rounded-full ${
+                                p.published
+                                  ? "bg-primary/15 text-primary"
+                                  : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {p.published ? "Published" : "Draft"}
+                            </span>
+                            <span className="font-label text-[10px] text-foreground/50">
+                              {new Date(p.updated_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <h3 className="font-display text-2xl truncate">{p.title}</h3>
+                          {p.excerpt && (
+                            <p className="text-ink-soft text-sm mt-1 line-clamp-2">
+                              {p.excerpt}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <button
+                            onClick={() => setEditingPost(p)}
+                            className="font-label text-[10px] px-3 py-2 border border-border hover:border-primary"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => removePost(p.id)}
+                            className="font-label text-[10px] px-3 py-2 text-destructive border border-transparent hover:border-destructive"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </>
+        )}
+
+        {/* STORIES TAB */}
+        {tab === "stories" && (
+          <>
+            {editingStory ? (
+              <div className="bg-cream-deep/40 border border-border p-8">
+                <h2 className="font-display text-2xl mb-6">
+                  {editingStory.id ? "Edit story" : "New story"}
+                </h2>
+                <div className="grid md:grid-cols-[200px_1fr] gap-8">
+                  <div>
+                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                      Cover (3:4)
+                    </label>
+                    <div
+                      onClick={() => fileRef.current?.click()}
+                      className="aspect-[3/4] bg-background border border-border cursor-pointer hover:border-primary flex items-center justify-center overflow-hidden"
+                    >
+                      {editingStory.cover ? (
+                        <img
+                          src={editingStory.cover}
+                          alt="cover preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="font-label text-[10px] text-foreground/50 px-4 text-center">
+                          Click to upload
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) =>
+                        e.target.files?.[0] && handleCover(e.target.files[0])
+                      }
+                    />
+                    {editingStory.cover && (
+                      <button
+                        onClick={() => setEditingStory({ ...editingStory, cover: "" })}
+                        className="font-label text-[10px] text-destructive mt-2 hover:underline"
+                      >
+                        Remove cover
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-5">
+                    <div>
+                      <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                        Title
+                      </label>
+                      <input
+                        type="text"
+                        value={editingStory.title}
+                        onChange={(e) =>
+                          setEditingStory({ ...editingStory, title: e.target.value })
+                        }
+                        className="w-full bg-background border border-border px-4 py-3 font-display text-xl focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                        Genre tag
+                      </label>
+                      <input
+                        type="text"
+                        value={editingStory.genre}
+                        onChange={(e) =>
+                          setEditingStory({ ...editingStory, genre: e.target.value })
+                        }
+                        placeholder="BL · Dark Romance · Omegaverse"
+                        className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                        Blurb
+                      </label>
+                      <textarea
+                        value={editingStory.blurb}
+                        onChange={(e) =>
+                          setEditingStory({ ...editingStory, blurb: e.target.value })
+                        }
+                        rows={4}
+                        className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                        Published on
+                      </label>
+                      <select
+                        value={editingStory.platform}
+                        onChange={(e) =>
+                          setEditingStory({ ...editingStory, platform: e.target.value })
+                        }
+                        className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
+                      >
+                        <option>Wattpad</option>
+                        <option>Dreame</option>
+                        <option>Original / Unpublished</option>
+                      </select>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={saveStory}
+                        className="bg-primary text-primary-foreground font-label text-xs px-6 py-3 hover:bg-primary/90"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingStory(null)}
+                        className="font-label text-xs px-6 py-3 border border-border hover:border-primary"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => setEditingStory({ ...emptyStory })}
+                  className="bg-primary text-primary-foreground font-label text-xs px-6 py-3 hover:bg-primary/90 mb-10"
+                >
+                  + New story
+                </button>
+
+                {stories.length === 0 ? (
+                  <p className="text-ink-soft italic font-display text-xl">
+                    No stories yet. Begin.
+                  </p>
+                ) : (
+                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {stories.map((s) => (
+                      <article key={s.id} className="bg-cream-deep/40 border border-border">
+                        <div className="aspect-[3/4] bg-background overflow-hidden">
+                          {s.cover ? (
+                            <img
+                              src={s.cover}
+                              alt={s.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center font-label text-[10px] text-foreground/40">
+                              no cover
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-display text-lg leading-tight mb-1 truncate">
+                            {s.title}
+                          </h3>
+                          {s.genre && (
+                            <span className="inline-block font-label text-[9px] tracking-widest text-primary border border-primary/30 px-2 py-0.5 mb-2">
+                              {s.genre}
+                            </span>
+                          )}
+                          <p className="font-label text-[10px] text-foreground/50 mb-3">
+                            Published on {s.platform}
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setEditingStory(s)}
+                              className="flex-1 font-label text-[10px] px-3 py-2 border border-border hover:border-primary"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => removeStory(s.id, s.title)}
+                              className="flex-1 font-label text-[10px] px-3 py-2 text-destructive border border-transparent hover:border-destructive"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+
+        {/* PLAYLIST TAB */}
+        {tab === "playlist" && (
+          <div className="bg-cream-deep/40 border border-border p-6 max-w-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="font-label text-[10px] text-primary mb-1">Playlist Settings</p>
+                <h2 className="font-display text-xl">Spotify Playlist</h2>
+              </div>
+              <button
+                onClick={() => {
+                  resetPlaylist();
+                  setPlaylistInput(DEFAULT_PLAYLIST_URL);
+                  setPlaylistSaved(false);
+                }}
+                className="font-label text-[10px] text-foreground/50 hover:text-destructive"
+              >
+                Reset
+              </button>
+            </div>
+            <label className="font-label text-[10px] text-foreground/60 block mb-2">
+              Spotify Playlist Embed URL
+            </label>
+            <input
+              type="url"
+              value={playlistInput}
+              onChange={(e) => {
+                setPlaylistInput(e.target.value);
+                setPlaylistSaved(false);
+              }}
+              placeholder="https://open.spotify.com/embed/playlist/..."
+              className="w-full bg-background border border-border px-4 py-3 font-body text-sm focus:outline-none focus:border-primary"
+            />
+            <p className="font-label text-[10px] text-foreground/50 mt-2">
+              Paste either the share link or the embed URL — both work.
+            </p>
+            <div className="flex items-center gap-3 mt-4">
+              <button
+                onClick={() => {
+                  const saved = savePlaylist(playlistInput);
+                  setPlaylistInput(saved);
+                  setPlaylistSaved(true);
+                  setTimeout(() => setPlaylistSaved(false), 2000);
+                }}
+                className="bg-primary text-primary-foreground font-label text-xs px-5 py-2.5 hover:bg-primary/90"
+              >
+                Save Playlist
+              </button>
+              {playlistSaved && (
+                <span className="font-label text-[10px] text-primary">Saved ✓</span>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>
