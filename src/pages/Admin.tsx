@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import { useStories, type Story } from "@/hooks/useStories";
 import { usePlaylist, DEFAULT_PLAYLIST_URL } from "@/hooks/usePlaylist";
+import { usePlatforms, type Platform } from "@/hooks/usePlatforms";
 
 interface Post {
   id: string;
@@ -24,8 +25,15 @@ const emptyStory: Omit<Story, "id"> = {
   platform: "Wattpad",
   cover: "",
 };
+const emptyPlatform: Omit<Platform, "id"> = {
+  name: "",
+  handle: "",
+  line: "",
+  url: "",
+  mark: "",
+};
 
-type Tab = "posts" | "stories" | "playlist";
+type Tab = "posts" | "stories" | "platforms" | "playlist";
 
 const Admin = () => {
   const navigate = useNavigate();
