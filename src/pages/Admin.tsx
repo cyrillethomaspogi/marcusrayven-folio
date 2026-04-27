@@ -262,6 +262,7 @@ const Admin = () => {
         setTab(id);
         setEditingPost(null);
         setEditingStory(null);
+        setEditingPlatform(null);
       }}
       className={`font-label text-[10px] tracking-widest px-4 py-2 border-b-2 transition-colors ${
         tab === id
@@ -297,6 +298,7 @@ const Admin = () => {
         <div className="flex gap-2 border-b border-border mb-10">
           {tabBtn("posts", "Posts")}
           {tabBtn("stories", "Stories")}
+          {tabBtn("platforms", "Platforms")}
           {tabBtn("playlist", "Playlist")}
         </div>
 
@@ -542,10 +544,17 @@ const Admin = () => {
                         }
                         className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
                       >
-                        <option>Wattpad</option>
-                        <option>Dreame</option>
-                        <option>Original / Unpublished</option>
+                        {platforms.map((p) => (
+                          <option key={p.id} value={p.name}>{p.name}</option>
+                        ))}
+                        {!platforms.some((p) => p.name === editingStory.platform) && editingStory.platform && (
+                          <option value={editingStory.platform}>{editingStory.platform}</option>
+                        )}
+                        <option value="Original / Unpublished">Original / Unpublished</option>
                       </select>
+                      <p className="font-label text-[9px] text-foreground/40 mt-1">
+                        Manage the list in the Platforms tab.
+                      </p>
                     </div>
 
                     <div className="flex gap-3 pt-2">
