@@ -9,20 +9,42 @@ interface Entry {
   message: string;
   created_at: string;
 }
+interface Reaction {
+  id: string;
+  entry_id: string;
+  reaction: "like" | "heart";
+}
+interface Reply {
+  id: string;
+  entry_id: string;
+  message: string;
+  created_at: string;
+}
 
 const Guestbook = () => {
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [reactions, setReactions] = useState<Reaction[]>([]);
+  const [replies, setReplies] = useState<Reply[]>([]);
   const [nickname, setNickname] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
   const load = async () => {
-    const { data } = await supabase
-      .from("guestbook_entries")
-      .select("id, nickname, message, created_at")
-      .order("created_at", { ascending: false })
-      .limit(200);
-    setEntries((data ?? []) as Entry[]);
+    const [{ data: e }, { data: r }, { data: rep }] = await Promise.all([
+      supabase
+        .from("guestbook_entries")
+        .select("id, nickname, message, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200),
+      supabase.from("guestbook_reactions").select("id, entry_id, reaction"),
+      supabase
+        .from("guestbook_replies")
+        .select("id, entry_id, message, created_at")
+        .order("created_at", { ascending: true }),
+    ]);
+    setEntries((e ?? []) as Entry[]);
+    setReactions((r ?? []) as Reaction[]);
+    setReplies((rep ?? []) as Reply[]);
   };
 
   useEffect(() => {
