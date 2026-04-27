@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import authorPortrait from "@/assets/author-portrait.jpg";
+import logoMark from "@/assets/marcus-rayven-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useStories } from "@/hooks/useStories";
 import { usePlaylist } from "@/hooks/usePlaylist";
+import { usePlatforms } from "@/hooks/usePlatforms";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const navLinks = [
@@ -30,6 +32,7 @@ const Index = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const { stories } = useStories();
   const { url: playlistUrl } = usePlaylist();
+  const { platforms } = usePlatforms();
   const clickRef = useRef({ count: 0, timer: 0 as unknown as number });
 
   const handleSecretClick = () => {
