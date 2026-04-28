@@ -463,13 +463,13 @@ const Admin = () => {
                     <label className="font-label text-[10px] text-foreground/60 block mb-2">
                       Content
                     </label>
-                    <textarea
+                    <RichTextEditor
                       value={editingPost.content}
-                      onChange={(e) =>
-                        setEditingPost({ ...editingPost, content: e.target.value })
+                      onChange={(html) =>
+                        setEditingPost({ ...editingPost, content: html })
                       }
-                      rows={14}
-                      className="w-full bg-background border border-border px-4 py-3 font-body leading-relaxed focus:outline-none focus:border-primary"
+                      placeholder="Write your post…"
+                      minHeight={320}
                     />
                   </div>
                   <label className="flex items-center gap-3 font-label text-xs">
