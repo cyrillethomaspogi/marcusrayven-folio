@@ -1132,27 +1132,27 @@ const Admin = () => {
                         </ul>
                       )}
 
-                      <div className="flex gap-2">
-                        <textarea
+                      <div className="space-y-2">
+                        <RichTextEditor
                           value={replyDrafts[entry.id] ?? ""}
-                          onChange={(e) =>
+                          onChange={(html) =>
                             setReplyDrafts((prev) => ({
                               ...prev,
-                              [entry.id]: e.target.value,
+                              [entry.id]: html,
                             }))
                           }
-                          rows={2}
-                          maxLength={2000}
                           placeholder="Write a reply…"
-                          className="flex-1 bg-background border border-border px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                          minHeight={90}
                         />
-                        <button
-                          onClick={() => sendReply(entry.id)}
-                          disabled={!(replyDrafts[entry.id] ?? "").trim()}
-                          className="bg-primary text-primary-foreground font-label text-[10px] px-4 self-stretch hover:bg-primary/90 disabled:opacity-50"
-                        >
-                          Reply
-                        </button>
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => sendReply(entry.id)}
+                            disabled={!(replyDrafts[entry.id] ?? "").replace(/<[^>]*>/g, "").trim()}
+                            className="bg-primary text-primary-foreground font-label text-[10px] px-5 py-2 hover:bg-primary/90 disabled:opacity-50"
+                          >
+                            Reply
+                          </button>
+                        </div>
                       </div>
                     </li>
                   );
