@@ -416,15 +416,12 @@ const Index = () => {
                       </p>
                     )}
                     {p.content && (
-                      <details className="group max-w-3xl">
-                        <summary className="font-label text-[11px] tracking-widest text-primary cursor-pointer hover:underline list-none">
-                          <span className="group-open:hidden">Read more →</span>
-                          <span className="hidden group-open:inline">Close ↑</span>
-                        </summary>
-                        <div className="mt-5">
-                          <RichText html={p.content} />
-                        </div>
-                      </details>
+                      <Link
+                        to={`/blog/${p.id}`}
+                        className="font-label text-[11px] tracking-widest text-primary hover:underline inline-block"
+                      >
+                        Read more →
+                      </Link>
                     )}
                   </article>
                 );
