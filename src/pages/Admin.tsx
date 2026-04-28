@@ -26,6 +26,7 @@ const emptyStory: Omit<Story, "id"> = {
   blurb: "",
   platform: "Wattpad",
   cover: "",
+  link: "",
 };
 const emptyPlatform: Omit<Platform, "id"> = {
   name: "",
@@ -320,6 +321,7 @@ const Admin = () => {
         blurb: editingStory.blurb,
         platform: editingStory.platform,
         cover: editingStory.cover,
+        link: editingStory.link ?? "",
       });
     }
     setEditingStory(null);

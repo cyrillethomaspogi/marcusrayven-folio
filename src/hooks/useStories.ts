@@ -7,6 +7,7 @@ export interface Story {
   blurb: string;
   platform: string;
   cover: string; // data URL or external URL
+  link?: string; // external URL to read the story
 }
 
 const KEY = "mr.stories.v1";
