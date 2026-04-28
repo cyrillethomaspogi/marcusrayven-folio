@@ -1082,11 +1082,10 @@ const Admin = () => {
                               </div>
                               {editingReplyId === rep.id ? (
                                 <div className="space-y-2">
-                                  <textarea
+                                  <RichTextEditor
                                     value={editingReplyText}
-                                    onChange={(e) => setEditingReplyText(e.target.value)}
-                                    rows={3}
-                                    className="w-full bg-background border border-border px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                                    onChange={setEditingReplyText}
+                                    minHeight={100}
                                   />
                                   <div className="flex gap-2">
                                     <button
@@ -1108,9 +1107,7 @@ const Admin = () => {
                                 </div>
                               ) : (
                                 <>
-                                  <p className="text-sm text-ink-soft whitespace-pre-wrap">
-                                    {rep.message}
-                                  </p>
+                                  <RichText html={rep.message} className="text-sm" />
                                   <div className="flex gap-3 mt-1">
                                     <button
                                       onClick={() => {
