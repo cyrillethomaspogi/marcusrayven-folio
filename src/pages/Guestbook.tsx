@@ -1,5 +1,6 @@
 import { useEffect, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
+import RichText from "@/components/RichText";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
