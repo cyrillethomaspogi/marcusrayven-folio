@@ -367,9 +367,19 @@ const Index = () => {
                     {s.blurb && (
                       <p className="text-ink-soft text-sm leading-relaxed mb-4">{s.blurb}</p>
                     )}
-                    <p className="font-label text-[10px] text-foreground/50 tracking-widest">
+                    <p className="font-label text-[10px] text-foreground/50 tracking-widest mb-4">
                       Published on {s.platform}
                     </p>
+                    {s.link && (
+                      <a
+                        href={s.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block bg-primary text-primary-foreground font-label text-[10px] tracking-widest px-4 py-2 hover:bg-primary/90 transition-colors"
+                      >
+                        Read Now →
+                      </a>
+                    )}
                   </div>
                 </article>
               ))}

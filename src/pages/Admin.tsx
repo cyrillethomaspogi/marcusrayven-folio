@@ -26,6 +26,7 @@ const emptyStory: Omit<Story, "id"> = {
   blurb: "",
   platform: "Wattpad",
   cover: "",
+  link: "",
 };
 const emptyPlatform: Omit<Platform, "id"> = {
   name: "",
@@ -320,6 +321,7 @@ const Admin = () => {
         blurb: editingStory.blurb,
         platform: editingStory.platform,
         cover: editingStory.cover,
+        link: editingStory.link ?? "",
       });
     }
     setEditingStory(null);
@@ -678,6 +680,24 @@ const Admin = () => {
                       </select>
                       <p className="font-label text-[9px] text-foreground/40 mt-1">
                         Manage the list in the Platforms tab.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                        Story link (URL)
+                      </label>
+                      <input
+                        type="url"
+                        value={editingStory.link ?? ""}
+                        onChange={(e) =>
+                          setEditingStory({ ...editingStory, link: e.target.value })
+                        }
+                        placeholder="https://www.wattpad.com/story/..."
+                        className="w-full bg-background border border-border px-4 py-3 font-body focus:outline-none focus:border-primary"
+                      />
+                      <p className="font-label text-[9px] text-foreground/40 mt-1">
+                        Optional. Adds a "Read Now" button on the homepage.
                       </p>
                     </div>
 
