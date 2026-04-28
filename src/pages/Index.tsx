@@ -8,6 +8,7 @@ import { useStories } from "@/hooks/useStories";
 import { usePlaylist } from "@/hooks/usePlaylist";
 import { usePlatforms } from "@/hooks/usePlatforms";
 import ThemeToggle from "@/components/ThemeToggle";
+import RichText from "@/components/RichText";
 
 const navLinks = [
   { label: "Works", href: "#works" },
