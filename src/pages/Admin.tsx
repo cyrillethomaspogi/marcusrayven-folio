@@ -5,6 +5,8 @@ import type { Session } from "@supabase/supabase-js";
 import { useStories, type Story } from "@/hooks/useStories";
 import { usePlaylist, DEFAULT_PLAYLIST_URL } from "@/hooks/usePlaylist";
 import { usePlatforms, type Platform } from "@/hooks/usePlatforms";
+import RichTextEditor from "@/components/RichTextEditor";
+import RichText from "@/components/RichText";
 
 interface Post {
   id: string;
