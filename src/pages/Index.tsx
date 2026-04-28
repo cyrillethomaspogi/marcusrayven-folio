@@ -90,7 +90,7 @@ const Index = () => {
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, [posts, stories, platforms]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
