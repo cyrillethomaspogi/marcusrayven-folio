@@ -194,3 +194,32 @@
     @apply text-2xl md:text-3xl leading-relaxed text-foreground/80 border-l-2 border-primary pl-6;
   }
 }
+
+@layer components {
+  .prose-rich {
+    @apply text-ink-soft leading-relaxed;
+  }
+  .prose-rich p { @apply mb-4; }
+  .prose-rich p:last-child { @apply mb-0; }
+  .prose-rich strong { @apply text-foreground font-semibold; }
+  .prose-rich em { @apply italic; }
+  .prose-rich a { @apply text-primary underline underline-offset-2 hover:text-primary/80; }
+  .prose-rich h1 { @apply font-display text-3xl md:text-4xl text-foreground mt-6 mb-4 leading-tight; }
+  .prose-rich h2 { @apply font-display text-2xl md:text-3xl text-foreground mt-6 mb-3 leading-tight; }
+  .prose-rich h3 { @apply font-display text-xl md:text-2xl text-foreground mt-5 mb-2 leading-snug; }
+  .prose-rich h4 { @apply font-display text-lg text-foreground mt-4 mb-2; }
+  .prose-rich ul { @apply list-disc pl-6 mb-4 space-y-1; }
+  .prose-rich ol { @apply list-decimal pl-6 mb-4 space-y-1; }
+  .prose-rich blockquote {
+    @apply border-l-2 border-primary pl-4 italic text-foreground/80 my-4;
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .prose-rich code {
+    @apply bg-muted px-1.5 py-0.5 rounded text-[0.9em] font-mono;
+  }
+  .prose-rich pre {
+    @apply bg-muted p-4 rounded overflow-x-auto my-4;
+  }
+  .prose-rich pre code { @apply bg-transparent p-0; }
+  .prose-rich :first-child { margin-top: 0; }
+}
