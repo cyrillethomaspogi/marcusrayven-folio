@@ -1,5 +1,6 @@
 import { useEffect, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
+import RichText from "@/components/RichText";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -212,9 +213,7 @@ const Guestbook = () => {
                             <p className="font-label text-[10px] tracking-widest text-primary mb-1">
                               Marcus replied
                             </p>
-                            <p className="text-base leading-relaxed text-ink-soft whitespace-pre-wrap">
-                              {rep.message}
-                            </p>
+                            <RichText html={rep.message} className="text-base leading-relaxed" />
                           </li>
                         ))}
                       </ul>

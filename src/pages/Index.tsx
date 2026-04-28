@@ -8,6 +8,7 @@ import { useStories } from "@/hooks/useStories";
 import { usePlaylist } from "@/hooks/usePlaylist";
 import { usePlatforms } from "@/hooks/usePlatforms";
 import ThemeToggle from "@/components/ThemeToggle";
+import RichText from "@/components/RichText";
 
 const navLinks = [
   { label: "Works", href: "#works" },
@@ -21,6 +22,7 @@ interface Post {
   id: string;
   title: string;
   excerpt: string;
+  content: string;
   published_at: string | null;
   created_at: string;
 }
@@ -50,7 +52,7 @@ const Index = () => {
   useEffect(() => {
     supabase
       .from("posts")
-      .select("id, title, excerpt, published_at, created_at")
+      .select("id, title, excerpt, content, published_at, created_at")
       .eq("published", true)
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(20)
@@ -405,13 +407,24 @@ const Index = () => {
                     style={{ transitionDelay: `${i * 100}ms` }}
                   >
                     <p className="font-label text-[10px] text-foreground/50 mb-3">{date}</p>
-                    <h3 className="font-display text-3xl md:text-[2.2rem] leading-snug mb-4 hover:text-primary transition-colors cursor-pointer">
+                    <h3 className="font-display text-3xl md:text-[2.2rem] leading-snug mb-4">
                       {p.title}
                     </h3>
                     {p.excerpt && (
-                      <p className="text-lg leading-relaxed text-ink-soft mb-5 max-w-2xl">
+                      <p className="text-lg leading-relaxed text-ink-soft mb-5 max-w-2xl italic">
                         {p.excerpt}
                       </p>
+                    )}
+                    {p.content && (
+                      <details className="group max-w-3xl">
+                        <summary className="font-label text-[11px] tracking-widest text-primary cursor-pointer hover:underline list-none">
+                          <span className="group-open:hidden">Read more →</span>
+                          <span className="hidden group-open:inline">Close ↑</span>
+                        </summary>
+                        <div className="mt-5">
+                          <RichText html={p.content} />
+                        </div>
+                      </details>
                     )}
                   </article>
                 );
