@@ -52,7 +52,7 @@ const Index = () => {
   useEffect(() => {
     supabase
       .from("posts")
-      .select("id, title, excerpt, published_at, created_at")
+      .select("id, title, excerpt, content, published_at, created_at")
       .eq("published", true)
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(20)
