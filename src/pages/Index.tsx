@@ -22,6 +22,7 @@ interface Post {
   id: string;
   title: string;
   excerpt: string;
+  content: string;
   published_at: string | null;
   created_at: string;
 }
