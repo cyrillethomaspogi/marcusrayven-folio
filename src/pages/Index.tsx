@@ -447,7 +447,7 @@ const Index = () => {
         <div className="container max-w-6xl">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
             <div className="reveal order-2 md:order-1 w-full">
-              <div className="spotify-embed-wrap rounded-xl overflow-hidden border border-border/60 shadow-card bg-card h-[280px] md:h-[380px] w-full">
+              <div className="spotify-embed-wrap rounded-xl overflow-hidden border border-border/60 shadow-card bg-card w-full md:h-[380px]">
                 <iframe
                   key={playlistUrl}
                   title="Marcus Rayven writing playlist"
@@ -455,7 +455,8 @@ const Index = () => {
                   loading="lazy"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   allowFullScreen
-                  className="spotify-embed block w-full h-full"
+                  height={152}
+                  className="spotify-embed block w-full h-[152px] md:h-full"
                   style={{ border: 0 }}
                 />
               </div>
