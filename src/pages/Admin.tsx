@@ -403,6 +403,7 @@ const Admin = () => {
         setEditingPost(null);
         setEditingStory(null);
         setEditingPlatform(null);
+        setEditingSocial(null);
       }}
       className={`font-label text-[10px] tracking-widest px-4 py-2 border-b-2 transition-colors ${
         tab === id
