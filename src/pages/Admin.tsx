@@ -7,7 +7,12 @@ import { usePlaylist, DEFAULT_PLAYLIST_URL } from "@/hooks/usePlaylist";
 import { usePlatforms, type Platform } from "@/hooks/usePlatforms";
 import RichTextEditor from "@/components/RichTextEditor";
 import RichText from "@/components/RichText";
-import { useSocials, type SocialKey, type SocialConfig } from "@/hooks/useSocials";
+import {
+  useSocials,
+  SOCIAL_ICON_OPTIONS,
+  type SocialItem,
+} from "@/hooks/useSocials";
+import { ICON_MAP } from "@/components/SocialIcons";
 
 interface Post {
   id: string;
@@ -93,9 +98,10 @@ const Admin = () => {
   const [playlistEditMode, setPlaylistEditMode] = useState(false);
 
   // Socials state
-  const { socials, save: saveSocial } = useSocials();
-  const [socialDrafts, setSocialDrafts] = useState<Record<SocialKey, SocialConfig>>(socials);
-  const [socialSavedKey, setSocialSavedKey] = useState<SocialKey | null>(null);
+  const { socials, addSocial, updateSocial, deleteSocial, reorder } = useSocials();
+  const [editingSocial, setEditingSocial] = useState<
+    SocialItem | (Omit<SocialItem, "id"> & { id?: string }) | null
+  >(null);
 
   // Guestbook state
   const [gbEntries, setGbEntries] = useState<GuestbookEntry[]>([]);
@@ -109,9 +115,7 @@ const Admin = () => {
     setPlaylistInput(playlistUrl);
   }, [playlistUrl]);
 
-  useEffect(() => {
-    setSocialDrafts(socials);
-  }, [socials]);
+
 
   // Auth + admin check
   useEffect(() => {
@@ -399,6 +403,7 @@ const Admin = () => {
         setEditingPost(null);
         setEditingStory(null);
         setEditingPlatform(null);
+        setEditingSocial(null);
       }}
       className={`font-label text-[10px] tracking-widest px-4 py-2 border-b-2 transition-colors ${
         tab === id
@@ -1051,50 +1056,108 @@ const Admin = () => {
 
         {/* SOCIALS TAB */}
         {tab === "socials" && (
-          <div className="space-y-6 max-w-2xl">
-            <div>
-              <p className="font-label text-[10px] text-primary mb-1">Social Media Icons</p>
-              <h2 className="font-display text-xl">Facebook & Instagram links</h2>
-              <p className="font-label text-[10px] text-foreground/50 mt-2">
-                Icons appear in the Contact section and footer. Leave the profile URL empty to hide an icon.
-              </p>
-            </div>
-
-            {(["facebook", "instagram"] as SocialKey[]).map((key) => {
-              const draft = socialDrafts[key];
-              const label = key.charAt(0).toUpperCase() + key.slice(1);
-              return (
-                <div key={key} className="bg-cream-deep/40 border border-border p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-display text-lg">{label}</h3>
-                    {draft.icon ? (
-                      <img
-                        src={draft.icon}
-                        alt={`${label} preview`}
-                        className="w-10 h-10 rounded-full object-cover border border-border"
-                      />
-                    ) : (
-                      <span className="w-10 h-10 rounded-full border border-border flex items-center justify-center font-label text-[10px] text-primary">
-                        {key === "facebook" ? "FB" : "IG"}
+          <>
+            {editingSocial ? (
+              <div className="bg-cream-deep/40 border border-border p-6 max-w-2xl space-y-5">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-display text-xl">
+                    {editingSocial.id ? "Edit social link" : "New social link"}
+                  </h2>
+                  {(() => {
+                    const Icon = ICON_MAP[editingSocial.iconName];
+                    const isCustom =
+                      editingSocial.iconName === "custom" && editingSocial.iconImage;
+                    return (
+                      <span className="w-12 h-12 rounded-full border border-border bg-background/60 flex items-center justify-center overflow-hidden text-foreground/70">
+                        {isCustom ? (
+                          <img
+                            src={editingSocial.iconImage}
+                            alt="preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : Icon ? (
+                          <Icon size={20} strokeWidth={1.7} />
+                        ) : (
+                          <span className="font-label text-[10px] text-primary">
+                            {(editingSocial.label || "??").slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
                       </span>
-                    )}
-                  </div>
+                    );
+                  })()}
+                </div>
 
-                  <div>
-                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
-                      Icon URL (or upload an image)
+                <div>
+                  <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                    Display name
+                  </label>
+                  <input
+                    type="text"
+                    value={editingSocial.label}
+                    onChange={(e) =>
+                      setEditingSocial({ ...editingSocial, label: e.target.value })
+                    }
+                    placeholder="Instagram"
+                    className="w-full bg-background border border-border px-4 py-2.5 font-body text-sm focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                    Icon
+                  </label>
+                  <div className="grid grid-cols-6 sm:grid-cols-9 gap-2 mb-3">
+                    {SOCIAL_ICON_OPTIONS.filter((o) => o.value !== "custom").map((opt) => {
+                      const Icon = ICON_MAP[opt.value];
+                      const active = editingSocial.iconName === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() =>
+                            setEditingSocial({ ...editingSocial, iconName: opt.value })
+                          }
+                          title={opt.label}
+                          aria-label={opt.label}
+                          className={`aspect-square flex items-center justify-center rounded-md border transition-colors ${
+                            active
+                              ? "border-primary text-primary bg-primary/10"
+                              : "border-border text-foreground/60 hover:border-primary"
+                          }`}
+                        >
+                          {Icon && <Icon size={18} strokeWidth={1.7} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditingSocial({ ...editingSocial, iconName: "custom" })
+                    }
+                    className={`font-label text-[10px] tracking-widest px-3 py-1.5 border ${
+                      editingSocial.iconName === "custom"
+                        ? "border-primary text-primary bg-primary/10"
+                        : "border-border text-foreground/60 hover:border-primary"
+                    }`}
+                  >
+                    Use custom image
+                  </button>
+                </div>
+
+                {editingSocial.iconName === "custom" && (
+                  <div className="space-y-2">
+                    <label className="font-label text-[10px] text-foreground/60 block">
+                      Custom image URL
                     </label>
                     <input
                       type="url"
-                      value={draft.icon}
+                      value={editingSocial.iconImage}
                       onChange={(e) =>
-                        setSocialDrafts((prev) => ({
-                          ...prev,
-                          [key]: { ...prev[key], icon: e.target.value },
-                        }))
+                        setEditingSocial({ ...editingSocial, iconImage: e.target.value })
                       }
-                      placeholder="https://... (leave empty for text fallback)"
-                      className="w-full bg-background border border-border px-4 py-2.5 font-body text-sm focus:outline-none focus:border-primary mb-2"
+                      placeholder="https://..."
+                      className="w-full bg-background border border-border px-4 py-2.5 font-body text-sm focus:outline-none focus:border-primary"
                     />
                     <input
                       type="file"
@@ -1107,87 +1170,184 @@ const Admin = () => {
                           return;
                         }
                         const reader = new FileReader();
-                        reader.onload = () => {
-                          setSocialDrafts((prev) => ({
-                            ...prev,
-                            [key]: { ...prev[key], icon: String(reader.result) },
-                          }));
-                        };
+                        reader.onload = () =>
+                          setEditingSocial({
+                            ...editingSocial,
+                            iconImage: String(reader.result),
+                          });
                         reader.readAsDataURL(file);
                       }}
                       className="font-label text-[10px] text-foreground/60"
                     />
                   </div>
+                )}
 
-                  <div>
-                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
-                      Profile Link
-                    </label>
-                    <input
-                      type="url"
-                      value={draft.url}
-                      onChange={(e) =>
-                        setSocialDrafts((prev) => ({
-                          ...prev,
-                          [key]: { ...prev[key], url: e.target.value },
-                        }))
-                      }
-                      placeholder={`https://www.${key}.com/marcusrayven`}
-                      className="w-full bg-background border border-border px-4 py-2.5 font-body text-sm focus:outline-none focus:border-primary"
-                    />
-                  </div>
-
-                  <label className="flex items-center gap-3 font-label text-xs">
-                    <input
-                      type="checkbox"
-                      checked={draft.newTab}
-                      onChange={(e) =>
-                        setSocialDrafts((prev) => ({
-                          ...prev,
-                          [key]: { ...prev[key], newTab: e.target.checked },
-                        }))
-                      }
-                      className="accent-primary"
-                    />
-                    Open in new tab
+                <div>
+                  <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                    Profile link (URL)
                   </label>
-
-                  <div className="flex items-center gap-3 pt-1">
-                    <button
-                      onClick={() => {
-                        saveSocial(key, draft);
-                        setSocialSavedKey(key);
-                        setTimeout(
-                          () =>
-                            setSocialSavedKey((curr) => (curr === key ? null : curr)),
-                          2000,
-                        );
-                      }}
-                      className="bg-primary text-primary-foreground font-label text-xs px-5 py-2 hover:bg-primary/90"
-                    >
-                      Save {label}
-                    </button>
-                    {draft.icon && (
-                      <button
-                        onClick={() =>
-                          setSocialDrafts((prev) => ({
-                            ...prev,
-                            [key]: { ...prev[key], icon: "" },
-                          }))
-                        }
-                        className="font-label text-[10px] text-destructive hover:underline"
-                      >
-                        Remove icon
-                      </button>
-                    )}
-                    {socialSavedKey === key && (
-                      <span className="font-label text-[10px] text-primary">Saved ✓</span>
-                    )}
-                  </div>
+                  <input
+                    type="url"
+                    value={editingSocial.url}
+                    onChange={(e) =>
+                      setEditingSocial({ ...editingSocial, url: e.target.value })
+                    }
+                    placeholder="https://www.instagram.com/marcusrayven"
+                    className="w-full bg-background border border-border px-4 py-2.5 font-body text-sm focus:outline-none focus:border-primary"
+                  />
                 </div>
-              );
-            })}
-          </div>
+
+                <label className="flex items-center gap-3 font-label text-xs">
+                  <input
+                    type="checkbox"
+                    checked={editingSocial.newTab}
+                    onChange={(e) =>
+                      setEditingSocial({ ...editingSocial, newTab: e.target.checked })
+                    }
+                    className="accent-primary"
+                  />
+                  Open in new tab
+                </label>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => {
+                      if (!editingSocial.label.trim()) {
+                        alert("Display name is required.");
+                        return;
+                      }
+                      if (!editingSocial.url.trim()) {
+                        alert("Profile link is required.");
+                        return;
+                      }
+                      const payload = {
+                        label: editingSocial.label.trim(),
+                        iconName: editingSocial.iconName,
+                        iconImage: editingSocial.iconImage,
+                        url: editingSocial.url.trim(),
+                        newTab: editingSocial.newTab,
+                      };
+                      if (editingSocial.id) {
+                        updateSocial(editingSocial.id, payload);
+                      } else {
+                        addSocial(payload);
+                      }
+                      setEditingSocial(null);
+                    }}
+                    className="bg-primary text-primary-foreground font-label text-xs px-6 py-3 hover:bg-primary/90"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setEditingSocial(null)}
+                    className="font-label text-xs px-6 py-3 border border-border hover:border-primary"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6 max-w-3xl">
+                <div className="flex items-end justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="font-label text-[10px] text-primary mb-1">Social Media</p>
+                    <h2 className="font-display text-xl">Profile links</h2>
+                    <p className="font-label text-[10px] text-foreground/50 mt-2">
+                      Add any platform — icons appear in the Contact section and the footer in the order shown below.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      setEditingSocial({
+                        label: "",
+                        iconName: "link",
+                        iconImage: "",
+                        url: "",
+                        newTab: true,
+                      })
+                    }
+                    className="bg-primary text-primary-foreground font-label text-xs px-5 py-2.5 hover:bg-primary/90"
+                  >
+                    + New social
+                  </button>
+                </div>
+
+                {socials.length === 0 ? (
+                  <p className="text-ink-soft italic font-display text-xl">
+                    No social links yet. Add one to get started.
+                  </p>
+                ) : (
+                  <ul className="grid sm:grid-cols-2 gap-4">
+                    {socials.map((s, i) => {
+                      const Icon = ICON_MAP[s.iconName];
+                      const isCustom = s.iconName === "custom" && s.iconImage;
+                      return (
+                        <li
+                          key={s.id}
+                          className="bg-cream-deep/40 border border-border p-4 flex items-start gap-4"
+                        >
+                          <span className="w-12 h-12 rounded-full border border-border bg-background/60 flex items-center justify-center shrink-0 overflow-hidden text-foreground/70">
+                            {isCustom ? (
+                              <img
+                                src={s.iconImage}
+                                alt={s.label}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : Icon ? (
+                              <Icon size={20} strokeWidth={1.7} />
+                            ) : (
+                              <span className="font-label text-[10px] text-primary">
+                                {s.label.slice(0, 2).toUpperCase()}
+                              </span>
+                            )}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-display text-base truncate">{s.label}</h3>
+                            <p className="font-label text-[10px] text-foreground/50 truncate">
+                              {s.url}
+                            </p>
+                            <p className="font-label text-[9px] text-foreground/40 mt-0.5">
+                              {s.newTab ? "Opens in new tab" : "Opens in same tab"}
+                            </p>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                              <button
+                                onClick={() => reorder(s.id, "up")}
+                                disabled={i === 0}
+                                className="font-label text-[10px] px-2.5 py-1 border border-border hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                ↑
+                              </button>
+                              <button
+                                onClick={() => reorder(s.id, "down")}
+                                disabled={i === socials.length - 1}
+                                className="font-label text-[10px] px-2.5 py-1 border border-border hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                ↓
+                              </button>
+                              <button
+                                onClick={() => setEditingSocial(s)}
+                                className="font-label text-[10px] px-3 py-1 border border-border hover:border-primary"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Delete "${s.label}"?`)) deleteSocial(s.id);
+                                }}
+                                className="font-label text-[10px] px-3 py-1 text-destructive border border-transparent hover:border-destructive"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            )}
+          </>
         )}
 
         {/* GUESTBOOK TAB */}
