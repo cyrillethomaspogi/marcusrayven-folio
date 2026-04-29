@@ -7,7 +7,12 @@ import { usePlaylist, DEFAULT_PLAYLIST_URL } from "@/hooks/usePlaylist";
 import { usePlatforms, type Platform } from "@/hooks/usePlatforms";
 import RichTextEditor from "@/components/RichTextEditor";
 import RichText from "@/components/RichText";
-import { useSocials, type SocialKey, type SocialConfig } from "@/hooks/useSocials";
+import {
+  useSocials,
+  SOCIAL_ICON_OPTIONS,
+  type SocialItem,
+} from "@/hooks/useSocials";
+import { ICON_MAP } from "@/components/SocialIcons";
 
 interface Post {
   id: string;
@@ -93,9 +98,10 @@ const Admin = () => {
   const [playlistEditMode, setPlaylistEditMode] = useState(false);
 
   // Socials state
-  const { socials, save: saveSocial } = useSocials();
-  const [socialDrafts, setSocialDrafts] = useState<Record<SocialKey, SocialConfig>>(socials);
-  const [socialSavedKey, setSocialSavedKey] = useState<SocialKey | null>(null);
+  const { socials, addSocial, updateSocial, deleteSocial, reorder } = useSocials();
+  const [editingSocial, setEditingSocial] = useState<
+    SocialItem | (Omit<SocialItem, "id"> & { id?: string }) | null
+  >(null);
 
   // Guestbook state
   const [gbEntries, setGbEntries] = useState<GuestbookEntry[]>([]);
@@ -109,9 +115,7 @@ const Admin = () => {
     setPlaylistInput(playlistUrl);
   }, [playlistUrl]);
 
-  useEffect(() => {
-    setSocialDrafts(socials);
-  }, [socials]);
+
 
   // Auth + admin check
   useEffect(() => {
