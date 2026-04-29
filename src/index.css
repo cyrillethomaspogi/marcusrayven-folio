@@ -223,3 +223,10 @@
   .prose-rich pre code { @apply bg-transparent p-0; }
   .prose-rich :first-child { margin-top: 0; }
 }
+
+/* Spotify embed: ensure full width within container on all screens */
+.spotify-embed-wrap { max-width: 100%; }
+@media (max-width: 767px) {
+  .spotify-embed-wrap { width: 100% !important; max-width: 100% !important; }
+  .spotify-embed { width: 100% !important; min-width: 100% !important; }
+}

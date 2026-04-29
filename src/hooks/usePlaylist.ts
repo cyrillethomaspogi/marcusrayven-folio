@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 
-const KEY = "mr.playlist.url.v1";
+const KEY = "playlist_url";
+const LEGACY_KEY = "mr.playlist.url.v1";
 export const DEFAULT_PLAYLIST_URL =
   "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0";
 
 function read(): string {
   try {
-    return localStorage.getItem(KEY) || DEFAULT_PLAYLIST_URL;
+    const v = localStorage.getItem(KEY);
+    if (v) return v;
+    // migrate legacy key once
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) {
+      localStorage.setItem(KEY, legacy);
+      return legacy;
+    }
+    return DEFAULT_PLAYLIST_URL;
   } catch {
     return DEFAULT_PLAYLIST_URL;
   }
@@ -15,7 +24,6 @@ function read(): string {
 function normalize(url: string): string {
   const trimmed = url.trim();
   if (!trimmed) return DEFAULT_PLAYLIST_URL;
-  // Convert open.spotify.com/playlist/ID to embed form
   const m = trimmed.match(
     /^https?:\/\/open\.spotify\.com\/(?:embed\/)?(playlist|album|track|episode|show)\/([A-Za-z0-9]+)/
   );
@@ -49,6 +57,7 @@ export function usePlaylist() {
 
   const reset = useCallback(() => {
     localStorage.removeItem(KEY);
+    localStorage.removeItem(LEGACY_KEY);
     window.dispatchEvent(new CustomEvent("mr.playlist.update"));
     setUrl(DEFAULT_PLAYLIST_URL);
   }, []);

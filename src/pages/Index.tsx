@@ -9,6 +9,7 @@ import { usePlaylist } from "@/hooks/usePlaylist";
 import { usePlatforms } from "@/hooks/usePlatforms";
 import ThemeToggle from "@/components/ThemeToggle";
 import RichText from "@/components/RichText";
+import SocialIcons from "@/components/SocialIcons";
 
 const navLinks = [
   { label: "Works", href: "#works" },
@@ -206,7 +207,7 @@ const Index = () => {
             <span className="italic font-light text-primary">Rayven</span>
           </h1>
           <div className="ornament mt-10 max-w-md mx-auto animate-fade-up [animation-delay:280ms]">
-            <span className="font-label text-[10px]">est. mmxx</span>
+            <span className="font-label text-[10px]">Est. 2026</span>
           </div>
           <p className="mt-8 font-display italic text-2xl md:text-3xl text-ink-soft max-w-2xl mx-auto leading-snug animate-fade-up [animation-delay:380ms]">
             Stories that linger long after the last page.
@@ -445,8 +446,8 @@ const Index = () => {
       <section id="playlist" className="py-24 md:py-32">
         <div className="container max-w-6xl">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-            <div className="reveal order-2 md:order-1">
-              <div className="rounded-xl overflow-hidden border border-border/60 shadow-card bg-card h-[280px] md:h-[380px]">
+            <div className="reveal order-2 md:order-1 w-full">
+              <div className="spotify-embed-wrap rounded-xl overflow-hidden border border-border/60 shadow-card bg-card h-[280px] md:h-[380px] w-full">
                 <iframe
                   key={playlistUrl}
                   title="Marcus Rayven writing playlist"
@@ -454,7 +455,7 @@ const Index = () => {
                   loading="lazy"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   allowFullScreen
-                  className="block w-full h-full"
+                  className="spotify-embed block w-full h-full"
                   style={{ border: 0 }}
                 />
               </div>
@@ -518,6 +519,7 @@ const Index = () => {
               >
                 Email <span className="text-foreground/50">— marcusraaayven@gmail.com</span>
               </a>
+              <SocialIcons className="mt-4 justify-center" />
             </div>
           </div>
 
@@ -545,17 +547,14 @@ const Index = () => {
 
       {/* FOOTER */}
       <footer className="py-10 border-t border-border/50">
-        <div className="container flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="font-label text-[10px] text-foreground/60">
+        <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
+          <p
+            className="font-label text-[10px] text-foreground/60 cursor-default select-none"
+            onClick={handleSecretClick}
+          >
             © Marcus Rayven. All rights reserved.
           </p>
-          <p
-            className="font-display italic text-sm text-foreground/50 cursor-default select-none"
-            onClick={handleSecretClick}
-            title=""
-          >
-            Set in Cormorant & Lora.
-          </p>
+          <SocialIcons size="sm" />
         </div>
       </footer>
     </div>
