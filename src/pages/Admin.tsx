@@ -7,6 +7,7 @@ import { usePlaylist, DEFAULT_PLAYLIST_URL } from "@/hooks/usePlaylist";
 import { usePlatforms, type Platform } from "@/hooks/usePlatforms";
 import RichTextEditor from "@/components/RichTextEditor";
 import RichText from "@/components/RichText";
+import { useSocials, type SocialKey, type SocialConfig } from "@/hooks/useSocials";
 
 interface Post {
   id: string;
@@ -36,7 +37,7 @@ const emptyPlatform: Omit<Platform, "id"> = {
   mark: "",
 };
 
-type Tab = "posts" | "stories" | "platforms" | "playlist" | "guestbook";
+type Tab = "posts" | "stories" | "platforms" | "playlist" | "socials" | "guestbook";
 
 interface GuestbookEntry {
   id: string;
@@ -89,6 +90,12 @@ const Admin = () => {
   const { url: playlistUrl, save: savePlaylist, reset: resetPlaylist } = usePlaylist();
   const [playlistInput, setPlaylistInput] = useState(playlistUrl);
   const [playlistSaved, setPlaylistSaved] = useState(false);
+  const [playlistEditMode, setPlaylistEditMode] = useState(false);
+
+  // Socials state
+  const { socials, save: saveSocial } = useSocials();
+  const [socialDrafts, setSocialDrafts] = useState<Record<SocialKey, SocialConfig>>(socials);
+  const [socialSavedKey, setSocialSavedKey] = useState<SocialKey | null>(null);
 
   // Guestbook state
   const [gbEntries, setGbEntries] = useState<GuestbookEntry[]>([]);
