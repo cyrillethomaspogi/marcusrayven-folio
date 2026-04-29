@@ -976,9 +976,11 @@ const Admin = () => {
               </div>
               <button
                 onClick={() => {
+                  if (!confirm("Reset to the default playlist?")) return;
                   resetPlaylist();
                   setPlaylistInput(DEFAULT_PLAYLIST_URL);
                   setPlaylistSaved(false);
+                  setPlaylistEditMode(false);
                 }}
                 className="font-label text-[10px] text-foreground/50 hover:text-destructive"
               >
@@ -991,32 +993,200 @@ const Admin = () => {
             <input
               type="url"
               value={playlistInput}
+              readOnly={!playlistEditMode}
               onChange={(e) => {
                 setPlaylistInput(e.target.value);
                 setPlaylistSaved(false);
               }}
               placeholder="https://open.spotify.com/embed/playlist/..."
-              className="w-full bg-background border border-border px-4 py-3 font-body text-sm focus:outline-none focus:border-primary"
+              className={`w-full bg-background border px-4 py-3 font-body text-sm focus:outline-none ${
+                playlistEditMode
+                  ? "border-primary"
+                  : "border-border text-foreground/70 cursor-not-allowed"
+              }`}
             />
             <p className="font-label text-[10px] text-foreground/50 mt-2">
-              Paste either the share link or the embed URL — both work.
+              Paste either the share link or the embed URL — both work. Saved instantly to your browser.
             </p>
-            <div className="flex items-center gap-3 mt-4">
-              <button
-                onClick={() => {
-                  const saved = savePlaylist(playlistInput);
-                  setPlaylistInput(saved);
-                  setPlaylistSaved(true);
-                  setTimeout(() => setPlaylistSaved(false), 2000);
-                }}
-                className="bg-primary text-primary-foreground font-label text-xs px-5 py-2.5 hover:bg-primary/90"
-              >
-                Save Playlist
-              </button>
+            <div className="flex items-center gap-3 mt-4 flex-wrap">
+              {!playlistEditMode ? (
+                <button
+                  onClick={() => setPlaylistEditMode(true)}
+                  className="bg-primary text-primary-foreground font-label text-xs px-5 py-2.5 hover:bg-primary/90"
+                >
+                  Edit Playlist
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      const saved = savePlaylist(playlistInput);
+                      setPlaylistInput(saved);
+                      setPlaylistSaved(true);
+                      setPlaylistEditMode(false);
+                      setTimeout(() => setPlaylistSaved(false), 2500);
+                    }}
+                    className="bg-primary text-primary-foreground font-label text-xs px-5 py-2.5 hover:bg-primary/90"
+                  >
+                    Save Playlist
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPlaylistInput(playlistUrl);
+                      setPlaylistEditMode(false);
+                      setPlaylistSaved(false);
+                    }}
+                    className="font-label text-xs px-5 py-2.5 border border-border hover:border-primary"
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
               {playlistSaved && (
-                <span className="font-label text-[10px] text-primary">Saved ✓</span>
+                <span className="font-label text-[10px] text-primary">Playlist saved!</span>
               )}
             </div>
+          </div>
+        )}
+
+        {/* SOCIALS TAB */}
+        {tab === "socials" && (
+          <div className="space-y-6 max-w-2xl">
+            <div>
+              <p className="font-label text-[10px] text-primary mb-1">Social Media Icons</p>
+              <h2 className="font-display text-xl">Facebook & Instagram links</h2>
+              <p className="font-label text-[10px] text-foreground/50 mt-2">
+                Icons appear in the Contact section and footer. Leave the profile URL empty to hide an icon.
+              </p>
+            </div>
+
+            {(["facebook", "instagram"] as SocialKey[]).map((key) => {
+              const draft = socialDrafts[key];
+              const label = key.charAt(0).toUpperCase() + key.slice(1);
+              return (
+                <div key={key} className="bg-cream-deep/40 border border-border p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display text-lg">{label}</h3>
+                    {draft.icon ? (
+                      <img
+                        src={draft.icon}
+                        alt={`${label} preview`}
+                        className="w-10 h-10 rounded-full object-cover border border-border"
+                      />
+                    ) : (
+                      <span className="w-10 h-10 rounded-full border border-border flex items-center justify-center font-label text-[10px] text-primary">
+                        {key === "facebook" ? "FB" : "IG"}
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                      Icon URL (or upload an image)
+                    </label>
+                    <input
+                      type="url"
+                      value={draft.icon}
+                      onChange={(e) =>
+                        setSocialDrafts((prev) => ({
+                          ...prev,
+                          [key]: { ...prev[key], icon: e.target.value },
+                        }))
+                      }
+                      placeholder="https://... (leave empty for text fallback)"
+                      className="w-full bg-background border border-border px-4 py-2.5 font-body text-sm focus:outline-none focus:border-primary mb-2"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 1 * 1024 * 1024) {
+                          alert("Icon image too large (max 1MB).");
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          setSocialDrafts((prev) => ({
+                            ...prev,
+                            [key]: { ...prev[key], icon: String(reader.result) },
+                          }));
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                      className="font-label text-[10px] text-foreground/60"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-label text-[10px] text-foreground/60 block mb-2">
+                      Profile Link
+                    </label>
+                    <input
+                      type="url"
+                      value={draft.url}
+                      onChange={(e) =>
+                        setSocialDrafts((prev) => ({
+                          ...prev,
+                          [key]: { ...prev[key], url: e.target.value },
+                        }))
+                      }
+                      placeholder={`https://www.${key}.com/marcusrayven`}
+                      className="w-full bg-background border border-border px-4 py-2.5 font-body text-sm focus:outline-none focus:border-primary"
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-3 font-label text-xs">
+                    <input
+                      type="checkbox"
+                      checked={draft.newTab}
+                      onChange={(e) =>
+                        setSocialDrafts((prev) => ({
+                          ...prev,
+                          [key]: { ...prev[key], newTab: e.target.checked },
+                        }))
+                      }
+                      className="accent-primary"
+                    />
+                    Open in new tab
+                  </label>
+
+                  <div className="flex items-center gap-3 pt-1">
+                    <button
+                      onClick={() => {
+                        saveSocial(key, draft);
+                        setSocialSavedKey(key);
+                        setTimeout(
+                          () =>
+                            setSocialSavedKey((curr) => (curr === key ? null : curr)),
+                          2000,
+                        );
+                      }}
+                      className="bg-primary text-primary-foreground font-label text-xs px-5 py-2 hover:bg-primary/90"
+                    >
+                      Save {label}
+                    </button>
+                    {draft.icon && (
+                      <button
+                        onClick={() =>
+                          setSocialDrafts((prev) => ({
+                            ...prev,
+                            [key]: { ...prev[key], icon: "" },
+                          }))
+                        }
+                        className="font-label text-[10px] text-destructive hover:underline"
+                      >
+                        Remove icon
+                      </button>
+                    )}
+                    {socialSavedKey === key && (
+                      <span className="font-label text-[10px] text-primary">Saved ✓</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
