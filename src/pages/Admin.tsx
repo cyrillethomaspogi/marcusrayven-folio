@@ -109,6 +109,10 @@ const Admin = () => {
     setPlaylistInput(playlistUrl);
   }, [playlistUrl]);
 
+  useEffect(() => {
+    setSocialDrafts(socials);
+  }, [socials]);
+
   // Auth + admin check
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
@@ -432,6 +436,7 @@ const Admin = () => {
           {tabBtn("stories", "Stories")}
           {tabBtn("platforms", "Platforms")}
           {tabBtn("playlist", "Playlist")}
+          {tabBtn("socials", "Socials")}
           {tabBtn("guestbook", "Guestbook")}
         </div>
 
